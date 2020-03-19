@@ -1,0 +1,18 @@
+{
+  "name": "ozbargain",
+  "version": "1.0.0",
+  "description": "OZ Bargain app",
+  "main": "index.js",
+  "author": "Raj Bandi",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/firestore": "^3.7.1",
+    "axios": "^0.19.2",
+    "cheerio": "^1.0.0-rc.3",
+    "moment-timezone": "^0.5.28",
+    "puppeteer": "^2.1.1",
+    "putenv": "^2.0.4",
+    "sanitize-html": "^1.22.1",
+    "x-ray": "^2.3.4"
+  }
+}

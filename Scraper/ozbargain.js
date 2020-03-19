@@ -1,0 +1,308 @@
+const xray = require("x-ray");
+const cheerio = require("cheerio");
+const axios = require("axios");
+const moment = require("moment-timezone");
+
+const x = new xray();
+const log = console.log;
+const logInfo = console.info;
+const logError = console.error;
+
+const db = require("./gcp");
+
+const dealUrl = "https://www.ozbargain.com.au";
+const liveUrl = dealUrl + "/api/live?last=0";
+
+const Action_VoteUp = "Vote Up";
+const Action_VoteDown = "Vote Down";
+const Action_Post = "Post";
+const liveActions = [Action_Post, Action_VoteUp, Action_VoteDown];
+const DateFormat = "DD/MM/YYYY hh:mm";
+
+const DateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/;
+const TimeRegex = /\d{1,2}\:\d{1,2}/;
+
+async function parseDeals() {
+  log("Fetching deals ");
+  let deals = await scrapeDeals();
+  log("Deals found ", deals.length);
+
+  let dummyDeals = deals;
+  for (let deal of dummyDeals) {
+    try {
+      let link = deal.link;
+      if (link) {
+        let details = await scrapeDeal(link);
+        if (details) {
+          deal.description = details.description;
+          deal.tags = details.tags;
+          if (!deal.dealId) {
+            deal.dealId = details.dealId;
+          }
+          deal.meta = details.meta;
+          deal.snapshot = details.snapshot;
+          deal.errors = details.errors;
+        } else {
+          if (!deal.dealId) {
+            deal.dealId = deal.link.split("/").pop();
+          }
+        }
+      }
+    } catch (e) {
+      logError(e);
+    }
+  }
+
+  log("Storing to database ", deals.length);
+
+  if (deals.length > 0) {
+    await db.addDeals(deals);
+  }
+
+  log("done...");
+}
+
+async function parseLive() {
+  try {
+    log("Fetching live deals");
+    let liveDeals = await scrapeLive();
+    log(" Total live deals found " + liveDeals.length);
+
+    let deals = [];
+    for (let liveDeal of liveDeals) {
+      try {
+        liveDeal.dealId = liveDeal.link.split("/").pop();
+
+        if (liveDeal.dealId) {
+
+          
+          let url = dealUrl + liveDeal.link;
+          let deal = await scrapeDeal(url);
+          if (deal) {
+
+            
+            deals.push(deal);
+          }
+        }
+      } catch (e) {
+        logError("An error occurred while adding/updating live deal ", e);
+      }
+      //log(liveDeal);
+    }
+
+    log("Storing live deals ",deals.length);
+    await db.addDeals(deals);
+    log("Done...");
+  } catch (e) {
+    logError("An error occurred while storing live deals", e);
+  }
+}
+
+async function scrapeLive() {
+  let deals = [];
+  try {
+    let liveDeals = await axios.get(liveUrl);
+    if (liveDeals.data) {
+      let records = liveDeals.data.records;
+      if (records) {
+        deals = records.filter(function(record) {
+          if (liveActions.indexOf(record.action) >= 0) {
+            return record;
+          }
+        });
+      }
+    }
+  } catch (e) {
+    logError(e);
+  }
+  return deals;
+}
+function scrapeDeal(dealLink) {
+  return new Promise(function(resolve, reject) {
+    try {
+      log("fetching " + dealLink);
+      x(dealLink, ".main", {
+        title: "h1#title@data-title",
+        meta: {
+          submitted: "div.submitted",
+          image: "img.gravatar@src"
+        },
+        description: "div.content@html",
+        vote: {
+          up: "span.voteup",
+          down: "span.votedown"
+        },
+
+        snapshot: {
+          link: ".foxshot-container a@href",
+          title: ".foxshot-container a@title",
+          image: ".foxshot-container img@src"
+        },
+        category: "ul.links span.tag a",
+        tags: [".taxonomy span"]
+      })
+        .then(function(deal) {
+          let errors = [];
+          deal.link = dealLink;
+          deal.dealId = dealLink.split("/").pop();
+          let content = parseDescription(deal.description);
+          if (!content || content.length < 2) {
+            errors.push("Failed to parse content from description");
+          }
+          deal.content = content;
+          deal.meta = parseMeta(deal.meta);
+          let meta = deal.meta;
+          if (!meta.author || meta.author.length < 2) {
+            errors.push("Failed to parse author from " + meta.submitted);
+          }
+          if (!meta.date || meta.date.length < 16 || meta.date.length > 20) {
+            errors.push("Failed to parse date from " + meta.submitted);
+          }
+          if (!meta.timestamp || meta.timestamp.length < 8) {
+            errors.push("Failed to parse timestamp from " + meta.submitted);
+          }
+
+          deal.snapshot = parseSnapshot(deal.snapshot);
+          let snapshot = deal.snapshot;
+          if (!snapshot.goto || snapshot.goto.length < 5) {
+            errors.push("Failed to parse snapshot from " + snapshot.title);
+          }
+
+          deal.errors = errors;
+          resolve(deal);
+        })
+        .catch(function(e) {
+          reject(e);
+        });
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+function parseDescription(description) {
+  let html = "";
+  try {
+    let $ = cheerio.load(description);
+    let childs = $("body").children();
+
+    let truncateLen = 165;
+    let htmlLen = 0;
+    if (childs.length > 0) {
+      let child1 = $(childs[0]);
+      let child1Text = child1.text();
+
+      if (child1Text.length > truncateLen) {
+        child1.text(child1Text.substring(1, truncateLen) + " ...");
+      }
+
+      htmlLen = child1.text().length;
+
+      html += $.html(childs[0]) + "\n";
+    }
+    if (htmlLen < truncateLen && childs.length > 1) {
+      let child2 = $(childs[1]);
+      let child2Text = child2.text();
+      let diffLen = truncateLen - htmlLen;
+      if (child2Text.length > diffLen) {
+        child2.text(child2Text.substring(1, diffLen));
+      }
+
+      child2.text(child2.text() + "...");
+      html += $.html(childs[1]) + "\n";
+    }
+  } catch (e) {
+    logError("An error occurred while parsing description ", e);
+  }
+  return html;
+}
+function parseMeta(meta) {
+  let author, submitDate, timestamp;
+  if (meta.submitted) {
+    author = meta.submitted.split(" on ")[0];
+
+    let dateMatch = meta.submitted.match(DateRegex);
+    if (dateMatch.length > 0) {
+      submitDate = dateMatch[0];
+      let timeMatch = meta.submitted.match(TimeRegex);
+      if (timeMatch.length > 0) {
+        submitDate += " ";
+        submitDate += timeMatch[0];
+      }
+    }
+
+    if (submitDate && submitDate.length > 0) {
+      timestamp = moment(submitDate, DateFormat).unix();
+    }
+  }
+
+  meta.author = author;
+  meta.date = submitDate;
+  meta.timestamp = timestamp;
+  return meta;
+}
+
+function parseSnapshot(snapshot) {
+  let goto = "";
+
+  if (snapshot.title) {
+    goto = snapshot.title.replace("Go to ", "");
+  }
+
+  snapshot.goto = goto;
+  return snapshot;
+}
+function scrapeDeals(lastDeal) {
+  return new Promise(function(resolve, reject) {
+    x(dealUrl, ".node-ozbdeal", [
+      {
+        title: "h2.title@data-title",
+        link: "h2.title a@href",
+        meta: {
+          submitted: "div.submitted",
+          image: "img.gravatar@src"
+        },
+        content: "div.content@html",
+        vote: {
+          up: "span.voteup",
+          down: "span.votedown"
+        },
+        gravatar: "img.gravatar@src",
+
+        snapshot: {
+          link: ".foxshot-container a@href",
+          title: ".foxshot-container a@title",
+          image: ".foxshot-container img@src"
+        },
+        category: "ul.links span.tag a"
+      }
+    ])
+      //  .paginate("a.pager-next@href")
+      .then(function(data) {
+        resolve(data);
+      })
+      .catch(function(e) {
+        reject(e);
+      });
+  });
+}
+
+async function downloadImage(imageUrl) {
+  let base64 = "";
+  try {
+    let image = await axios.get(imageUrl, { responseType: "arraybuffer" });
+    base64 = Buffer.from(image.data).toString("base64");
+  } catch (e) {
+    logError(e);
+  }
+  return base64;
+}
+
+module.exports = {
+  parseDeals: parseDeals,
+  scrapeDeals: scrapeDeals,
+  scrapeDeal: scrapeDeal,
+  downloadImage: downloadImage,
+  scrapeLive: scrapeLive,
+  parseLive: parseLive
+};
