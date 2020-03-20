@@ -28,7 +28,7 @@ async function parseDeals() {
   log("Deals found ", deals.length);
 
   let dummyDeals = deals;
-  for (let deal of dummyDeals) {
+  for (let deal of deals) {
     try {
       let link = deal.link;
       if (link) {
@@ -60,27 +60,40 @@ async function parseDeals() {
   }
 
   log("done...");
+  return deals;
 }
 
 async function parseLive() {
+  let deals = [];
+
   try {
     log("Fetching live deals");
     let liveDeals = await scrapeLive();
     log(" Total live deals found " + liveDeals.length);
+    let dealIds = [];
+    let uniqueDeals = [];
 
-    let deals = [];
-    for (let liveDeal of liveDeals) {
+    for(let liveDeal of liveDeals)
+    {
+      let dealId = liveDeal.link.split("/").pop();
+      liveDeal.dealId = dealId;
+      if(dealIds.indexOf(dealId)<0)
+      {
+        dealIds.push(dealId);
+        uniqueDeals.push(liveDeal);
+      }
+    }
+    log("After removing duplicates ", dealIds, dealIds.length);
+    for (let liveDeal of uniqueDeals) {
       try {
-        liveDeal.dealId = liveDeal.link.split("/").pop();
+        
 
         if (liveDeal.dealId) {
 
-          
+      
           let url = dealUrl + liveDeal.link;
           let deal = await scrapeDeal(url);
-          if (deal) {
-
-            
+          if (deal && deal.description) {
             deals.push(deal);
           }
         }
@@ -96,6 +109,8 @@ async function parseLive() {
   } catch (e) {
     logError("An error occurred while storing live deals", e);
   }
+
+  return deals;
 }
 
 async function scrapeLive() {
@@ -183,6 +198,10 @@ function scrapeDeal(dealLink) {
 function parseDescription(description) {
   let html = "";
   try {
+    if(!description)
+    {
+      return html;
+    }
     let $ = cheerio.load(description);
     let childs = $("body").children();
 
@@ -212,7 +231,7 @@ function parseDescription(description) {
       html += $.html(childs[1]) + "\n";
     }
   } catch (e) {
-    logError("An error occurred while parsing description ", e);
+    logError("An error occurred while parsing description ", e, description);
   }
   return html;
 }
@@ -277,7 +296,7 @@ function scrapeDeals(lastDeal) {
         category: "ul.links span.tag a"
       }
     ])
-      //  .paginate("a.pager-next@href")
+      .paginate("a.pager-next@href")
       .then(function(data) {
         resolve(data);
       })
@@ -285,6 +304,12 @@ function scrapeDeals(lastDeal) {
         reject(e);
       });
   });
+}
+
+async function getDeals(query)
+{
+    let deals = await db.getDeals(query);
+    return deals;
 }
 
 async function downloadImage(imageUrl) {
@@ -299,6 +324,7 @@ async function downloadImage(imageUrl) {
 }
 
 module.exports = {
+  getDeals: getDeals,
   parseDeals: parseDeals,
   scrapeDeals: scrapeDeals,
   scrapeDeal: scrapeDeal,

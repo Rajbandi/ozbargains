@@ -9,6 +9,55 @@ const firestore = new Firestore({
     timestampsInSnapshots: true,
   });
 
+async function getDeals(q)
+{
+  return new Promise(function(resolve, reject){
+
+    try{
+      let col = firestore.collection(COLLECTION_NAME);
+
+      let query = col;
+
+      if(!q)
+        q={};
+      if(q.offset)
+      {
+        query = query.offset(q.offset);
+      }
+      if(q.order)
+      {
+        query = query.orderBy(q.order);
+      }
+      if(q.limit)
+      {
+        query = query.limit(q.limit);
+      }
+      
+      if(q.where)
+      {
+        query = query.where(q.where);
+      }
+   
+      query.get().then(qs=>{
+
+        let deals = [];
+        qs.forEach(d=>{
+          deals.push(d.data());
+        });
+
+        resolve(deals);
+      });
+   
+      
+    }
+    catch(e)
+    {
+      reject(e);
+    }
+  });
+   
+}
+
 async function addDeals(deals)
 {
     if(!deals || deals.length<=0)
@@ -143,6 +192,7 @@ function deleteCollection(db, collectionPath, batchSize) {
   
 
 module.exports={
+    getDeals: getDeals,
     addDeal:addDeal,
     addDeals:addDeals,
     updateDeal:updateDeal,

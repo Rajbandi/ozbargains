@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:ozbargain/views/bottommenu.dart';
+import 'package:ozbargain/views/deals.dart';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key, this.title}) : super(key: key);
@@ -13,7 +14,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _counter = 0;
+ 
 
   @override
   Widget build(BuildContext context) {
@@ -22,20 +23,7 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.display1,
-            ),
-          ],
-        ),
-      ),
+      body: DealsView(),
       bottomNavigationBar: BottomMenuView()
     );
   }

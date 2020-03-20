@@ -1,1 +1,0 @@
-set GOOGLE_APPLICATION_CREDENTIALS="./OzBargains.json"
