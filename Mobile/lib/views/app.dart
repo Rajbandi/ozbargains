@@ -10,7 +10,7 @@ class OzBargainApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomePage(title: 'OZ Bargains'),
+      home: HomePage(title: 'OZ Bargain'),
     );
   }
 }

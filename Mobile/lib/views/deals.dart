@@ -3,6 +3,7 @@ import 'package:ozbargain/api/dealapi.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
+import 'package:ozbargain/views/deal.dart';
 
 class DealsView extends StatefulWidget {
   DealsView({Key key, this.title}) : super(key: key);
@@ -15,50 +16,76 @@ class DealsView extends StatefulWidget {
 
 class _DealsViewState extends State<DealsView> {
   List<Deal> deals = new List<Deal>();
-
+@override
+  void initState() {
+    super.initState();
+    _onRefresh();
+  }
+  
   @override
   Widget build(BuildContext context) {
+    
     var model = new AppDataModel();
-
     var listView = ListView.builder(
+        
         itemBuilder: (BuildContext context, int index) {
           var deal = deals[index];
-          return InkWell(
-              onTap: () {},
-              child: _getDeal(deal)
-              );
+          return InkWell(onTap: () {
+
+            _openDeal(deal);
+
+          }, child: Card(child: _getDeal(deal)));
         },
-        
         itemCount: deals == null ? 0 : deals.length,
         scrollDirection: Axis.vertical);
 
     return RefreshIndicator(
       child: listView,
+      
       onRefresh: () => _onRefresh(),
     );
   }
 
-  ListTile _getDeal(Deal d)
+  _openDeal(Deal d)
   {
+       var view = new DealView(title: "Deal", deal: d);
+    Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) => view));
+  }
+  ListTile _getDeal(Deal d) {
     return new ListTile(
-      contentPadding: EdgeInsets.symmetric(horizontal:20.0, vertical:10.0),
-      leading: Container(
-        padding: EdgeInsets.only(right:12.0),
-        decoration: new BoxDecoration(
-          border: new Border(
-            right: new BorderSide(width: 1.0, color: Colors.white24),
-          )
-
-        ),
-        child: Icon(Icons.autorenew,color:Colors.white),
+      contentPadding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.0),
+      dense: true,
+      title: Text(
+        d.title,
+        style: TextStyle(color: Theme.of(context).primaryColor),
       ),
-      title: Text(d.title),
-      subtitle: Row(
-        children: <Widget>[
-          Text(d.content)
-        ],
-      ),
-      trailing: Icon(Icons.keyboard_arrow_right,size:30.0),
+      subtitle: Padding(
+          child:
+              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  d.meta.author,
+                  
+                ),
+                Text(
+                  d.meta.date,
+                  
+                )
+              ],
+            ),
+          
+            InkWell(
+                onTap: () => {
+                      AppHelper.openUrl(context, d.title, d.snapshot.goto)
+                    },
+                child: Icon(
+                  Icons.open_in_browser,
+                  color: Theme.of(context).accentColor,
+                )),
+          ]),
+          padding: EdgeInsets.only(top: 2.0)),
     );
   }
 
@@ -74,9 +101,8 @@ class _DealsViewState extends State<DealsView> {
 
     var list = await AppDataModel().getDeals(q);
     setState(() {
-      this.deals = list;
+      this.deals = list.skipWhile((value) => value.errors != null && value.errors.length>0).toList();
     });
-
     return null;
   }
 }
