@@ -8,11 +8,12 @@ class AppDataModel {
     _api = new DealsApi();
   }
 
-  Future<List<Deal>> getDeals() async {
+  Future<List<Deal>> getDeals(DealsQuery q) async {
 
     var deals = new List<Deal>();
 
-    var data = await _api.getDeals();
+
+    var data = await _api.getDeals(q);
     if(data.success)
     {
         if(data.deals != null && data.deals.length>0)

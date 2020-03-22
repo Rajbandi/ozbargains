@@ -6,7 +6,7 @@ class Deal {
   List<String> tags;
   String category;
   String title;
-  List<Null> errors;
+  List<String> errors;
   Snapshot snapshot;
   Meta meta;
   String dealId;
@@ -35,7 +35,7 @@ class Deal {
     category = json['category'];
     title = json['title'];
     if (json['errors'] != null) {
-      errors = new List<Null>();
+      errors = new List<String>();
       json['errors'].forEach((v) {
         errors.add(v);
       });
@@ -186,3 +186,5 @@ Deals.fromJson(Map<String, dynamic> json) {
     return data;
   }
 }
+
+
