@@ -5,7 +5,7 @@
   "repository": "https://www.github.com/rajbandi/ozbargains/app",
   "author": "Raj Bandi",
   "license": "MIT",
-  "scripts":{
+  "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
@@ -19,6 +19,5 @@
   },
   "devDependencies": {
     "dotenv": "^8.2.0"
-    
   }
 }

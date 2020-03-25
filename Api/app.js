@@ -1,3 +1,5 @@
+/* jshint esversion:8 */
+
 const express = require("express");
 const ozbargain = require("./ozbargain");
 const putenv = require("putenv");
@@ -80,7 +82,7 @@ app.listen(PORT, () => {
     log("Local Run, configuring gcloud credentials");
     putenv(
       "GOOGLE_APPLICATION_CREDENTIALS",
-      "C:\\projects\\scraper\\ozbargain\\OzBargains.json"
+      "OzBargains.json"
     );
     }
 });

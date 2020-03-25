@@ -1,3 +1,4 @@
+/* jshint esversion: 8 */
 const Firestore = require("@google-cloud/firestore");
 
 const PROJECTID = "ozbargains";
