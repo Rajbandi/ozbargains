@@ -32,6 +32,23 @@ app.get("/api/deals", async (req, res) => {
   }
 });
 
+app.get("/api/cleandeals", async (req, res) => {
+  
+  try {
+    let deals = await ozbargain.cleanDeals();
+    res
+      .status(200)
+      .json({
+        success: true,
+        errorCode: "",
+        errorDescription: "",
+        deals: deals
+      });
+  } catch (e) {
+    logError('An error occured while cleaning deals',e);
+    sendError(res, 100, "An error occurred while cleaning deals");
+  }
+});
 app.get("/api/synclive", async (req, res) => {
   try {
     let deals = await ozbargain.parseLive();

@@ -73,9 +73,10 @@ class AppDataModel {
       else
       if(filter == DealFilter.Expiring)
       {
-        
+
       }
       else
+      if(filter == DealFilter.All)
       {
           this.deals.forEach((deal) {
               filteredDeals.add(deal);

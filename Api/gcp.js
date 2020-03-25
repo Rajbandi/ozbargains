@@ -48,16 +48,19 @@ async function getDeals(q) {
         query = query.limit(q.limit);
       }
 
-      query.get().then(qs => {
-        let deals = [];
-        qs.forEach(d => {
-          deals.push(d.data());
-        });
+      query
+        .get()
+        .then(qs => {
+          let deals = [];
+          qs.forEach(d => {
+            deals.push(d.data());
+          });
 
-        resolve(deals);
-      }).catch(error=>{
-        reject(error);
-      });
+          resolve(deals);
+        })
+        .catch(error => {
+          reject(error);
+        });
     } catch (e) {
       reject(e);
     }
@@ -69,28 +72,65 @@ async function addDeals(deals) {
     return;
   }
 
-  let invalidDeals = deals.filter((deal)=>{
-    return deal.errors != null && deal.errors.length>0;
+  let invalidDeals = deals.filter(deal => {
+    return deal.errors != null && deal.errors.length > 0;
   });
 
-  let batch = firestore.batch();
+  let validDeals = deals.filter(deal => {
+    return deal.errors == null || deal.errors.length == 0;
+  });
 
-  for (let deal of deals) {
-    if (deal.dealId) {
-      let dealRef = firestore.collection(DEALS_COLLECTION).doc(deal.dealId);
-      batch.set(dealRef, deal);
-    }
+  let validChunks = [],
+    invalidChunks = [];
+  let size = 499;
+  for (let i = 0; i < validDeals.length; i += size) {
+    validChunks.push(validDeals.slice(i, i + size));
+  }
+  for (let i = 0; i < invalidDeals.length; i += size) {
+    invalidChunks.push(invalidDeals.slice(i, i + size));
   }
 
-  for(let deal of invalidDeals)
-  {
-    if(deal.dealId)
+  console.log("Storing valid deals", validDeals.length);
+  for (let chunk of validChunks) {
+    try{
+      console.log("Storing valid chunk of size", chunk.length);
+    let validBatch = firestore.batch();
+    for (let deal of chunk) {
+      if (deal.dealId) {
+        let dealRef = firestore.collection(DEALS_COLLECTION).doc(deal.dealId);
+        validBatch.set(dealRef, deal);
+      }
+    }
+    validBatch.commit();
+    }
+    catch(e)
     {
-      let dealRef =  firestore.collection(INVALID_DEALS_COLLECTION).doc(deal.dealId);
-      batch.set(dealRef, deal);
+      console.error("An error occurred while storing valid deals chunk", e);
     }
+
   }
-  await batch.commit();
+
+  console.log("Storing invalid deals", invalidDeals.length);
+  for (let chunk of invalidChunks) {
+    try{
+      console.log("Storing invalid chunk of size", chunk.length);
+    let invalidBatch = firestore.batch();
+    for (let deal of chunk) {
+      if (deal.dealId) {
+        let dealRef = firestore
+          .collection(INVALID_DEALS_COLLECTION)
+          .doc(deal.dealId);
+        invalidBatch.set(dealRef, deal);
+      }
+    }
+    invalidBatch.commit();
+  }
+  catch(e)
+  {
+    console.error("An error occurred while storing invalid deals chunk", e);
+  }
+  }
+
 }
 
 async function updateDeals(deals) {
@@ -115,20 +155,16 @@ async function addDeal(deal) {
     return;
   }
 
-  if(deal.errors != null && deal.errors.length>=0)
-  {
+  if (deal.errors != null && deal.errors.length >= 0) {
     await firestore
-    .collection(INVALID_DEALS_COLLECTION)
-    .doc(deal.dealId)
-    .set(deal);
-    
-  }
-  else
-  {
+      .collection(INVALID_DEALS_COLLECTION)
+      .doc(deal.dealId)
+      .set(deal);
+  } else {
     await firestore
-    .collection(DEALS_COLLECTION)
-    .doc(deal.dealId)
-    .set(deal);
+      .collection(DEALS_COLLECTION)
+      .doc(deal.dealId)
+      .set(deal);
   }
 }
 
