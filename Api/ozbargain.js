@@ -140,6 +140,17 @@ async function scrapeLive() {
   }
   return deals;
 }
+
+async function cleanDeals()
+{
+        try{
+            await db.deleteDeals();
+        }
+        catch(e)
+        {
+          logError("An error occurred while cleaning deals ",e);
+        }
+}
 function scrapeDeal(dealLink) {
   return new Promise(function(resolve, reject) {
     try {
@@ -430,6 +441,7 @@ module.exports = {
   parseDeals: parseDeals,
   scrapeDeals: scrapeDeals,
   scrapeDeal: scrapeDeal,
+  cleanDeals: cleanDeals,
   downloadImage: downloadImage,
   scrapeLive: scrapeLive,
   parseLive: parseLive
