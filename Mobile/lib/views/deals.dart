@@ -5,6 +5,11 @@ import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/views/deal.dart';
 
+import '../helpers/apphelper.dart';
+import '../helpers/apphelper.dart';
+import '../helpers/apphelper.dart';
+import '../helpers/apphelper.dart';
+
 class DealsView extends StatefulWidget {
   DealsView({Key key, this.title}) : super(key: key);
 
@@ -21,9 +26,15 @@ class _DealsViewState extends State<DealsView> {
     super.initState();
     _onRefresh();
   }
-  TextStyle _nonTitleStyle;
+  TextStyle _nonTitleStyle, _primaryTitle,_highlightTitle;
+  TextTheme _currentTextTheme;
+  ThemeData _theme;
   @override
   Widget build(BuildContext context) {
+    _theme = Theme.of(context);
+
+    _primaryTitle = _theme.primaryTextTheme.subtitle2.copyWith(color: _theme.primaryColor);
+    _highlightTitle = _theme.accentTextTheme.subtitle2.copyWith(color: _theme.accentColor);
 
     _nonTitleStyle = Theme.of(context).textTheme.caption.merge(new TextStyle(color: Colors.grey));
     var model = new AppDataModel();
@@ -63,6 +74,37 @@ class _DealsViewState extends State<DealsView> {
   }
 
   Widget _getDeal(Deal d) {
+
+    List<Widget> metaWidgets = new List<Widget>();
+    metaWidgets.add(getNonTitle(d.meta.author));
+
+    var dealDate = AppHelper.getDateFromUnix(d.meta.timestamp);
+    var dealFormat = AppHelper.getLocalDateTime(dealDate);
+    metaWidgets.add(getNonTitle(dealFormat));
+    if(d.meta.upcomingDate>0)
+    {
+      var upcomDate = AppHelper.getDateFromUnix(d.meta.upcomingDate);
+      var upcomDays = DateTime.now().difference(upcomDate).inDays;
+      var upcomText = "From $upcomDate (in $upcomDays)";
+      metaWidgets.add(getNonTitle(upcomText));
+    }                     
+    
+    if(d.meta.expiredDate>0)
+    {
+      print(d.meta.expiredDate);
+      var expiryDate = AppHelper.getDateFromUnix(d.meta.expiredDate);
+      var expiryDiff = DateTime.now().difference(expiryDate);
+      var expiryDays = expiryDiff.inDays;
+      var expiryFormat = AppHelper.getLocalDateTime(expiryDate);
+      var expiryText = "Expires $expiryFormat ";
+      if(expiryDays>0)
+      {
+        expiryText += " (in ${expiryDiff.inDays} days)";
+      }
+
+      metaWidgets.add(getNonTitle(expiryText));
+    }
+
     return new Container(
         padding: EdgeInsets.only(top: 2, bottom: 2, left: 2, right: 2),
         child: Column(
@@ -72,7 +114,8 @@ class _DealsViewState extends State<DealsView> {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Expanded(flex: 6, child: Text(d.title)),
+                Expanded(flex: 6, child: getTitle(d)),
+                
               ],
             )),
             getDealRow(Row(
@@ -87,20 +130,22 @@ class _DealsViewState extends State<DealsView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
-                      getVote(context, d.vote.up + "+", Colors.green),
-                      getVote(context, d.vote.down + "-", Colors.red)
+                      getVote( (d.vote.up??"0") + "+", Colors.green),
+                      getVote( (d.vote.down??"0") + "-", Colors.red)
                     ],
                   ))),
                   Expanded(flex:5, child:
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      getNonTitle(d.meta.author),
-                      getNonTitle(d.meta.date)
-                    ],
+                    children: metaWidgets
                   )),
-                  
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                 Container(padding:EdgeInsets.only(right:10),child:Icon(Icons.content_copy))
+                 , Container(padding:EdgeInsets.only(right:10),child:Icon(Icons.open_in_new))
+                  ],)
                 ])),
             getDealRow(Row(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -135,6 +180,47 @@ class _DealsViewState extends State<DealsView> {
     );
   }
 
+  Widget getTitle(Deal d)
+  {
+     List<InlineSpan> spans = new List<InlineSpan>();
+    if(d.meta != null)
+    {
+       if(d.meta.upcomingDate != null && d.meta.upcomingDate>0)
+       {
+         spans.add(WidgetSpan(
+           child: Container(child: Text("UPCOMING", style: _highlightTitle.copyWith(color:Colors.white),),
+           padding: EdgeInsets.only(right:2, left:2),
+           margin: EdgeInsets.only(right:2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2.0),
+              color: Colors.green
+              ),
+           )
+         ));
+       }
+        if(d.meta.expiredDate != null && d.meta.expiredDate>0)
+       {
+         spans.add(WidgetSpan(
+           child: Container(
+             
+             child: Text("EXPIRED",  style: _highlightTitle.copyWith(color:Colors.white)),
+                 padding: EdgeInsets.only(right:2, left:2),
+           margin: EdgeInsets.only(right:2),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(2.0),
+              color: Colors.red
+              ),
+             )
+         ));
+       }
+    } 
+    spans.add(TextSpan(text: d.title, style: _primaryTitle));
+
+      return RichText(
+        text:TextSpan(
+          
+        children:spans));
+  }
   Widget getNonTitle(t) {
     return Text(t, style: _nonTitleStyle);
   }
@@ -155,23 +241,31 @@ class _DealsViewState extends State<DealsView> {
     );
 
     tags.forEach((element) {
-        var tagStyle = _nonTitleStyle.copyWith(backgroundColor: Colors.lightGreenAccent);
-        row.children.add(Padding(padding:EdgeInsets.only(left:2,right:2,top:2, bottom:2),child:Text(element, style: tagStyle,)));
+        var tagStyle = _nonTitleStyle.copyWith(color:Colors.white);
+        row.children.add(Container(padding:EdgeInsets.only(left:2,right:2,top:2, bottom:2),
+        margin: EdgeInsets.only(right:2, top:2),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(2.0)
+        ,color: Colors.brown),
+        child:Text(element, style: tagStyle,)));
     });
 
     return row;
   }
-  Widget getVote(context,v, Color c) {
-    var theme = Theme.of(context);
-    var textTheme = theme.textTheme;
-      var textStyle = textTheme.caption.merge(TextStyle(color: Colors.white));
+
+  Widget getIcon(icon) {
+    return  Container(alignment: Alignment.topCenter,
+            child: icon,
+        );
+  }
+
+  Widget getVote(v, Color c) {
     return  Container(
             alignment: Alignment.center,
             padding: EdgeInsets.all(1),
             margin: EdgeInsets.only(bottom: 1),
             child: Text(
               v,
-              style: textStyle,
+              style: _nonTitleStyle.copyWith(color:Colors.white),
             ),
             decoration: BoxDecoration(
               color: c,

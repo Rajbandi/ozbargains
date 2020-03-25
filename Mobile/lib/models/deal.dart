@@ -125,7 +125,10 @@ class Meta {
   String author;
   String date;
 
-  Meta({this.timestamp, this.submitted, this.image, this.author, this.date});
+  int expiredDate;
+  int upcomingDate;
+
+  Meta({this.timestamp, this.submitted, this.image, this.author, this.date, this.expiredDate, this.upcomingDate});
 
   Meta.fromJson(Map<String, dynamic> json) {
     timestamp = json['timestamp'];
@@ -133,6 +136,8 @@ class Meta {
     image = json['image'];
     author = json['author'];
     date = json['date'];
+    expiredDate = json['expiredDate'];
+    upcomingDate = json['upcomingDate'];
   }
 
   Map<String, dynamic> toJson() {
@@ -142,6 +147,8 @@ class Meta {
     data['image'] = this.image;
     data['author'] = this.author;
     data['date'] = this.date;
+    data['expiredDate'] = this.expiredDate;
+    data['upcomingDate'] = this.upcomingDate;
     return data;
   }
 }
