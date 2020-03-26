@@ -22,13 +22,15 @@ class DealsView extends StatefulWidget {
 class _DealsViewState extends State<DealsView> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Deal> deals = new List<Deal>();
-
+  bool _searchVisible;
+  
   DealFilter _filter;
   @override
   void initState() {
     super.initState();
     _floatButtonVisible = false;
     _filter = DealFilter.Today;
+    _searchVisible = false;
     _onRefresh();
   }
 
@@ -37,7 +39,6 @@ class _DealsViewState extends State<DealsView> {
   ThemeData _theme;
 
   final ScrollController _dealsController = ScrollController();
-
   BuildContext _context;
   @override
   Widget build(BuildContext context) {
@@ -60,18 +61,27 @@ class _DealsViewState extends State<DealsView> {
           return Divider(height: 1);
         },
         itemBuilder: (BuildContext context, int index) {
-          var deal = deals[index];
-          return InkWell(
-              onTap: () {
-                _openDeal(deal);
-              },
-              child: _getDeal(deal));
+            var deal = deals[index];
+            return InkWell(
+                onTap: () {
+                  _openDeal(deal);
+                },
+                child: _getDeal(deal));
         },
         itemCount: deals == null ? 0 : deals.length,
         scrollDirection: Axis.vertical);
 
     var refresh = RefreshIndicator(
-      child: listView,
+       
+      child: Stack(
+        children: <Widget>[
+
+        listView,
+         Visibility(visible: (_isLoading??false),child:new Align(
+              child: CircularProgressIndicator(),
+              alignment: FractionalOffset.center,
+            ))
+      ]),
       onRefresh: () => _onRefresh(),
     );
     var listNotification = NotificationListener<ScrollUpdateNotification>(
@@ -92,14 +102,23 @@ class _DealsViewState extends State<DealsView> {
         },
         child: Container(
             child: Column(children: <Widget>[
-          Expanded(child: getFilterSearchRow()),
+          Visibility(visible:_searchVisible??false, child:Expanded(child: getFilterSearchRow())),
           Expanded(child: getFilterHeaderRow()),
           Expanded(flex: 15, child: listNotification)
         ])));
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          title: Text(widget.title ?? ""),
+          title: Row(children: <Widget>[
+          Expanded(flex:2, child:Text(widget.title ?? "")),
+          Expanded(child:Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+            InkWell(child:Icon(Icons.refresh), onTap: () => { _onRefresh(refresh: true)},),
+            InkWell(child:Icon(Icons.search), onTap: () => { _showSearchRow() },),
+            InkWell(child:Icon(Icons.filter_list), onTap: () => {}),
+          ],),)
+          ],) 
         ),
         body: layout,
         floatingActionButton: _getFloatButton(),
@@ -386,6 +405,13 @@ class _DealsViewState extends State<DealsView> {
         _onRefresh();
       });
   }
+
+  _showSearchRow()
+  {
+    setState(() {
+      _searchVisible = !(_searchVisible??false);
+    });
+  }
   Widget getFilterSearchRow() {
     var row = Container(
         child: Row(
@@ -396,11 +422,6 @@ class _DealsViewState extends State<DealsView> {
           child: Icon(Icons.search),
           onTap: () => {},
         )),
-        Expanded(
-          child: InkWell(
-            child: Icon(Icons.filter_list),
-          ),
-        )
       ],
     ));
 
@@ -462,19 +483,24 @@ class _DealsViewState extends State<DealsView> {
   //         padding: EdgeInsets.only(top: 2.0)),
   //   );
   // }
-
+  bool _isLoading = false;
   Future<Null> _onRefresh({bool refresh=false}) async {
     print("Filtering with $_filter");
+    setState((){
+      _isLoading = true;
+      
+    });
     var list = await AppDataModel().getFilteredDeals(_filter, refresh:refresh);
     setState(() {
-      this.deals.clear();
 
       print("*************** Refreshing deals ${list.length} ${this.deals.length}");
+      this.deals.clear();
       this.deals = list
           .skipWhile((value) => value.errors != null && value.errors.length > 0)
           .toList();
 
       print("============== ${this.deals.length}");
+      _isLoading = false;
     });
     return null;
   }

@@ -24,6 +24,10 @@ const DateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/;
 const TimeRegex = /\d{1,2}\:\d{1,2}/;
 const ExpiredRegex = /\d{1,2}[\sa-zA-Z]{1,10}\d{1,2}\:\d{1,2}([a-zA-Z]{2})?/;
 const UpcomingRegex = /((\d{1,2}\s[a-zA-Z]{3}(\s\d{1,2}\:\d{1,2})?([a-zA-Z]{2})?)|\d{2})/;
+
+const sleepTime = 5000;
+x.delay(sleepTime);
+
 async function parseDeals() {
   log("Fetching deals ");
   let deals = await scrapeDeals();
@@ -35,6 +39,9 @@ async function parseDeals() {
     try {
       let link = deal.link;
       if (link) {
+        log("Sleeping for ",sleepTime);
+        await sleep(sleepTime);
+        log("Woke up after ", sleepTime);
         let details = await scrapeDeal(link);
         if (details) {
 
@@ -70,7 +77,9 @@ async function parseDeals() {
   log("done...");
   return saveDeals;
 }
-
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 async function parseLive() {
   let deals = [];
 
@@ -100,6 +109,9 @@ async function parseLive() {
 
       
           let url = dealUrl + liveDeal.link;
+          log("Sleeping for ",sleepTime);
+          await sleep(sleepTime);
+          log("Woke up after ", sleepTime);
           let deal = await scrapeDeal(url);
           if (deal && deal.description) {
             deals.push(deal);
