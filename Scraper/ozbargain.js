@@ -1,3 +1,4 @@
+/* jshint esversion: 8 */
 const xray = require("x-ray");
 const cheerio = require("cheerio");
 const axios = require("axios");
@@ -18,9 +19,17 @@ const Action_VoteDown = "Vote Down";
 const Action_Post = "Post";
 const liveActions = [Action_Post, Action_VoteUp, Action_VoteDown];
 const DateFormat = "DD/MM/YYYY hh:mm";
+const TimeZone = 'Australia/Melbourne';
 
 const DateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/;
 const TimeRegex = /\d{1,2}\:\d{1,2}/;
+const ExpiredRegex = /\d{1,2}[\sa-zA-Z]{1,10}\d{1,2}\:\d{1,2}([a-zA-Z]{2})?/;
+const UpcomingRegex = /((\d{1,2}\s[a-zA-Z]{3}(\s\d{1,2}\:\d{1,2})?([a-zA-Z]{2})?)|\d{2})/;
+
+const sleepTime = 200;
+
+moment.tz.setDefault(TimeZone);
+x.delay(sleepTime);
 
 async function parseDeals() {
   log("Fetching deals ");
@@ -28,41 +37,52 @@ async function parseDeals() {
   log("Deals found ", deals.length);
 
   let dummyDeals = deals;
+  let saveDeals = [];
   for (let deal of deals) {
     try {
       let link = deal.link;
       if (link) {
+       
+        await sleep(sleepTime);
+    
         let details = await scrapeDeal(link);
         if (details) {
-          deal.description = details.description;
-          deal.tags = details.tags;
-          if (!deal.dealId) {
-            deal.dealId = details.dealId;
-          }
-          deal.meta = details.meta;
-          deal.snapshot = details.snapshot;
-          deal.errors = details.errors;
-        } else {
-          if (!deal.dealId) {
-            deal.dealId = deal.link.split("/").pop();
-          }
-        }
+
+          saveDeals.push(details);
+
+          // deal.description = details.description;
+          // deal.tags = details.tags;
+          // if (!deal.dealId) {
+          //   deal.dealId = details.dealId;
+          // }
+          // deal.meta = details.meta;
+          // deal.snapshot = details.snapshot;
+          // deal.errors = details.errors;
+        } 
+        // else {
+        //   if (!deal.dealId) {
+        //     deal.dealId = deal.link.split("/").pop();
+        //   }
+        //}
       }
     } catch (e) {
       logError(e);
     }
   }
 
-  log("Storing to database ", deals.length);
+  log("Storing to database ", saveDeals.length);
 
-  if (deals.length > 0) {
-    await db.addDeals(deals);
+  if (saveDeals.length > 0 ) {
+    
+    await db.addDeals(saveDeals);
   }
 
   log("done...");
-  return deals;
+  return saveDeals;
 }
-
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 async function parseLive() {
   let deals = [];
 
@@ -92,6 +112,9 @@ async function parseLive() {
 
       
           let url = dealUrl + liveDeal.link;
+         
+          await sleep(sleepTime);
+         
           let deal = await scrapeDeal(url);
           if (deal && deal.description) {
             deals.push(deal);
@@ -132,6 +155,17 @@ async function scrapeLive() {
   }
   return deals;
 }
+
+async function cleanDeals()
+{
+        try{
+            await db.deleteDeals();
+        }
+        catch(e)
+        {
+          logError("An error occurred while cleaning deals ",e);
+        }
+}
 function scrapeDeal(dealLink) {
   return new Promise(function(resolve, reject) {
     try {
@@ -140,7 +174,9 @@ function scrapeDeal(dealLink) {
         title: "h1#title@data-title",
         meta: {
           submitted: "div.submitted",
-          image: "img.gravatar@src"
+          image: "img.gravatar@src",
+          expired: ".links span.expired",
+          upcoming:".links span.inactive"
         },
         description: "div.content@html",
         vote: {
@@ -166,6 +202,18 @@ function scrapeDeal(dealLink) {
           }
           deal.content = content;
           deal.meta = parseMeta(deal.meta);
+
+          if(deal.vote)
+          {
+            if(!deal.vote.up)
+            {
+              deal.vote.up = "0";
+            }
+            if(!deal.vote.down)
+            {
+              deal.vote.down = "0";
+            }
+          }
           let meta = deal.meta;
           if (!meta.author || meta.author.length < 2) {
             errors.push("Failed to parse author from " + meta.submitted);
@@ -236,7 +284,7 @@ function parseDescription(description) {
   return html;
 }
 function parseMeta(meta) {
-  let author, submitDate, timestamp;
+  let author, submitDate, timestamp, expiredDate, upcomingDate;
   if (meta.submitted) {
     author = meta.submitted.split(" on ")[0];
 
@@ -250,17 +298,97 @@ function parseMeta(meta) {
       }
     }
 
+    log("updating timestamp");
     if (submitDate && submitDate.length > 0) {
       timestamp = moment(submitDate, DateFormat).unix();
+      log(timestamp);
     }
+
+    let expired = meta.expired;
+    if(expired)
+    {
+      let expiredMatch = expired.match(ExpiredRegex);
+      if(expiredMatch.length>0)
+      {
+        
+         expiredDate = moment(expiredMatch[0],"DD MMM HH:mmA").unix();
+      }
+    }
+
+    if(meta.upcoming)
+    {
+
+      let upcomingDates = parseUpcomingDates(meta.upcoming);
+       upcomingDate = upcomingDates.upcoming;
+       if(upcomingDates.expiry)
+       {
+         expiredDate = upcomingDates.expiry;
+       }
+    }
+
   }
 
-  meta.author = author;
-  meta.date = submitDate;
-  meta.timestamp = timestamp;
+  meta.author = author || "";
+  meta.date = submitDate || "";
+  meta.timestamp = timestamp || 0;
+  meta.expiredDate = expiredDate || 0;
+  meta.upcomingDate = upcomingDate || 0;
+
   return meta;
 }
 
+function parseUpcomingDates(upcoming)
+  {
+    let dates = {
+      upcoming: 0,
+      expiry: 0
+    };
+    console.log('Parsing upcoming ', upcoming);
+    let upcomingDate, expiryDate;
+    let upcomings = upcoming.split("–");
+    if(upcomings.length>0)
+    {
+        let upcomingText = upcomings[0];
+        let upcomingMatch = upcomingText.match(UpcomingRegex);
+        if(upcomingMatch && upcomingMatch.length>0)
+        {
+            upcomingDate = upcomingMatch[0];
+        }
+        if(upcomings.length>1)
+        {
+            let expiryText = upcomings[1];  
+            let expiryMatch = expiryText.match(UpcomingRegex);
+            if(expiryMatch && expiryMatch.length>0)
+            {
+              expiryDate = expiryMatch[0];
+            }
+        }
+
+        let exp;
+        if(expiryDate)
+        {
+            exp = moment(expiryDate, 'DD MMM hh:mmA');
+            console.log('Expiry ',exp);
+            dates.expiry = exp.unix();
+        }
+        let upcom;
+        if(upcomingDate)
+        {
+            upcom = moment(upcomingDate, 'DD MMM hh:mmA');
+          if(upcomingDate.replace(" ","").length==2)
+            {
+              if(exp)
+              {
+                console.log("******* ", exp.get('M'));
+                upcom.set({month: exp.get('M')});
+              }
+            }
+            dates.upcoming = upcom.unix();
+        }
+    }
+
+    return dates;
+  }
 function parseSnapshot(snapshot) {
   let goto = "";
 
@@ -330,6 +458,7 @@ module.exports = {
   parseDeals: parseDeals,
   scrapeDeals: scrapeDeals,
   scrapeDeal: scrapeDeal,
+  cleanDeals: cleanDeals,
   downloadImage: downloadImage,
   scrapeLive: scrapeLive,
   parseLive: parseLive
