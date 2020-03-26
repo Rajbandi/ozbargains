@@ -384,6 +384,12 @@ class _DealsViewState extends State<DealsView> {
 
       }
       break;
+       case DealFilter.LongRunning:{
+        text = "Long Running";
+        action=()=> changeFilter(DealFilter.LongRunning);
+
+      }
+      break;
       default:{
         text = "All";
         action=()=> changeFilter(DealFilter.All);
