@@ -10,7 +10,6 @@
     "axios": "^0.19.2",
     "cheerio": "^1.0.0-rc.3",
     "moment-timezone": "^0.5.28",
-    "puppeteer": "^2.1.1",
     "putenv": "^2.0.4",
     "sanitize-html": "^1.22.1",
     "x-ray": "^2.3.4"

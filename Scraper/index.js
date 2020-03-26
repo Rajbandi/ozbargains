@@ -1,29 +1,22 @@
+/*jshint esversion: 8 */
+
 const putenv = require("putenv");
 const ozbargain = require("./ozbargain");
+const moment = require('moment-timezone');
 
-// (async () => {
-
-//   putenv("GOOGLE_APPLICATION_CREDENTIALS","C:\\projects\\scraper\\ozbargain\\OzBargains.json")
-//   //await ozbargain.parseDeals();
-//   await ozbargain.parseLive();
-//   //  let deal = await ozbargain.scrapeDeal("https://www.ozbargain.com.au/node/525477");
-//   //  console.log(deal);
-
-
-//   // let s = "Bad Company on 19/03/2020   -    09:01  jaycar.com.au (103 clicks)";
-
-//   // let regex = /\d{1,2}\/\d{1,2}\/\d{4}/;
-//   // let regex1 = /\d{1,2}\:\d{1,2}/;
-//   // let match = s.match(regex)[0];
-//   // let match1 = s.match(regex1)[0];
-//   // console.log(match);
-//   // console.log(match1);
-// })();
-
-exports.syncDeals = async () => {
+exports.syncDeals = async (req, res) => {
   await ozbargain.parseDeals();
-}
+  res.status(200).end();
+  console.log("Function finished");
+};
 
-exports.syncLive = async () => {
+exports.syncLive = async (req, res) => {
   await ozbargain.parseLive();
-}
+  res.status(200).end();
+  console.log("Function finished");
+};
+
+exports.cleanDeals = async(req, res)=>{
+  await ozbargain.cleanDeals();
+  res.status(200).end();
+};
