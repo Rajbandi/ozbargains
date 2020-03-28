@@ -1,10 +1,11 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ozbargain/views/dealwebview.dart';
 import 'package:intl/intl.dart';
 
 class AppHelper{
-
+static FlutterLocalNotificationsPlugin  flutterLocalNotificationsPlugin;
   static int currentTimeInSeconds(DateTime d) {
   
     var ms = d.millisecondsSinceEpoch;
@@ -30,5 +31,21 @@ class AppHelper{
       var dt = format.format(date);
       return dt;
   }
-
+  
+  static  Future showNotificationWithoutSound() async {
+  var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
+      'your channel id', 'your channel name', 'your channel description',
+      playSound: false, importance: Importance.Max, priority: Priority.High);
+  var iOSPlatformChannelSpecifics =
+      new IOSNotificationDetails(presentSound: false);
+  var platformChannelSpecifics = new NotificationDetails(
+      androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
+  await flutterLocalNotificationsPlugin.show(
+    0,
+    'New Post',
+    'How to Show Notification in Flutter',
+    platformChannelSpecifics,
+    payload: 'No_Sound',
+  );
+}
 }

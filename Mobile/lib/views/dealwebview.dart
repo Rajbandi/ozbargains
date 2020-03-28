@@ -15,21 +15,22 @@ class DealWebView extends StatefulWidget {
 class _DealWebState extends State<DealWebView> {
   @override
   Widget build(BuildContext context) {
-    return new WebviewScaffold(
+    return new SafeArea(child:WebviewScaffold(
+
       url: widget.url,
       appBar: new AppBar(
-        title: Text(widget.title),
+        
       ),
       withZoom: true,
       withLocalStorage: true,
       withJavascript: true,
-      
+      resizeToAvoidBottomInset: false,
       hidden: true,
       initialChild: Container(
         child: const Center(
           child: CircularProgressIndicator()
         ),
       ),
-    );
+    ));
   }
 }

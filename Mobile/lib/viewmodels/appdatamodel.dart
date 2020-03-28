@@ -90,7 +90,9 @@ class AppDataModel {
             d.meta.expiredDate>now)
               filteredDeals.add(d);
           });
-        filteredDeals.sort((d1,d2)=> d2.vote.up.compareTo(d1.vote.up));
+        filteredDeals.sort((d1,d2){
+          return int.tryParse(d2.vote.up).compareTo(int.tryParse(d1.vote.up));
+        });
       }
       else
       if(filter == DealFilter.Freebies)

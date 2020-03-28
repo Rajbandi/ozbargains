@@ -1,6 +1,7 @@
 
 
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class BottomMenuView extends StatefulWidget {
   BottomMenuView({Key key, this.title}) : super(key: key);
@@ -22,12 +23,12 @@ class _BottomMenuViewState extends State<BottomMenuView> {
           title: Text('Deals'),
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.business),
-          title: Text('Live'),
+          icon: Icon(Icons.notifications),
+          title: Text('Notifications'),
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.account_circle),
-          title: Text('Account'),
+          icon: Icon(Icons.info),
+          title: Text('About'),
         ),
       ],);
     

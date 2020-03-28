@@ -153,15 +153,19 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
             InkWell(child:Icon(Icons.refresh), onTap: () => { _onRefresh(refresh: true)},),
-            InkWell(child:Icon(Icons.filter_list), onTap: () => { _showSearchRow() }),
+            InkWell(child:Icon(Icons.filter_list), onTap: () => { 
+              
+                AppHelper.showNotificationWithoutSound()
+              //_showSearchRow() 
+              }),
             DropdownButton<String>(
+               
                hint: Text("Theme"),
                value: _currentTheme,
-              
               items: <String>["Light","Dark"].map((String value){
                 return new DropdownMenuItem<String>(
                   value: value,
-                  child: new Text(value)
+                  child: new Text(value,)
                 );
               }).toList()
               ,
@@ -248,9 +252,11 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
 
   Widget getFilterHeaderRow() {
     var container = Container(
+        
         child: ListView(
       // This next line does the trick.
       scrollDirection: Axis.horizontal,
+      shrinkWrap: true, 
       children: <Widget>[
         getFilterHeaderItem(DealFilter.Today),
         getFilterHeaderItem(DealFilter.Popular),
@@ -325,7 +331,8 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
     }
     
     return InkWell(child:Container(
-          padding: EdgeInsets.only(left:10,right:10, top:10, bottom: 10),
+          alignment: Alignment.center,
+          padding: EdgeInsets.only(left:10,right:10),
           child: Text(text, style:textStyle),
           decoration: BoxDecoration(color:color,
           ),
