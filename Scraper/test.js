@@ -1,5 +1,18 @@
+/* jshint esversion: 8 */
+const putenv = require("putenv");
+    const ozbargain = require("./ozbargain");
+    const moment = require('moment-timezone');
+
+(async()=>{
+
+    let url = "https://www.ozbargain.com.au/node/524178";
+    //let url="https://www.ozbargain.com.au/node/526612";
+    let deal = await ozbargain.scrapeDeal(url);
+
+    console.log(deal);
 
 
+})();
 
 // (async () => {
 //   let format = "DD/MM/YYYY hh:mm";

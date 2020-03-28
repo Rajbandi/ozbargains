@@ -1,1 +1,0 @@
-gcloud functions deploy --region=asia-east2  --memory=256MB --runtime=nodejs10 --timeout=540  --allow-unauthenticated

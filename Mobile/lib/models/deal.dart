@@ -124,7 +124,8 @@ class Meta {
   String image;
   String author;
   String date;
-
+  List<dynamic> labels;
+  String freebie;
   int expiredDate;
   int upcomingDate;
 
@@ -138,6 +139,8 @@ class Meta {
     date = json['date'];
     expiredDate = json['expiredDate'];
     upcomingDate = json['upcomingDate'];
+    labels = json['labels'];
+    freebie = json['freebie'];
   }
 
   Map<String, dynamic> toJson() {
@@ -149,6 +152,8 @@ class Meta {
     data['date'] = this.date;
     data['expiredDate'] = this.expiredDate;
     data['upcomingDate'] = this.upcomingDate;
+    data['freebie'] = this.freebie;
+    data['labels'] = this.labels;
     return data;
   }
 }

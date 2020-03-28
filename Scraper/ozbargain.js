@@ -175,6 +175,8 @@ function scrapeDeal(dealLink) {
         meta: {
           submitted: "div.submitted",
           image: "img.gravatar@src",
+          labels: ["div.messages ul li"],
+          freebie:"span.nodefreebie@text",
           expired: ".links span.expired",
           upcoming:".links span.inactive"
         },
@@ -202,7 +204,7 @@ function scrapeDeal(dealLink) {
           }
           deal.content = content;
           deal.meta = parseMeta(deal.meta);
-
+          
           if(deal.vote)
           {
             if(!deal.vote.up)
@@ -260,7 +262,7 @@ function parseDescription(description) {
       let child1Text = child1.text();
 
       if (child1Text.length > truncateLen) {
-        child1.text(child1Text.substring(1, truncateLen) + " ...");
+        child1.text(child1Text.substring(0, truncateLen) + " ...");
       }
 
       htmlLen = child1.text().length;
@@ -272,7 +274,7 @@ function parseDescription(description) {
       let child2Text = child2.text();
       let diffLen = truncateLen - htmlLen;
       if (child2Text.length > diffLen) {
-        child2.text(child2Text.substring(1, diffLen));
+        child2.text(child2Text.substring(0, diffLen));
       }
 
       child2.text(child2.text() + "...");
@@ -298,10 +300,10 @@ function parseMeta(meta) {
       }
     }
 
-    log("updating timestamp");
+    
     if (submitDate && submitDate.length > 0) {
       timestamp = moment(submitDate, DateFormat).unix();
-      log(timestamp);
+   
     }
 
     let expired = meta.expired;
@@ -326,6 +328,19 @@ function parseMeta(meta) {
        }
     }
 
+     if(meta.freebie)
+     {
+       meta.freebie = meta.freebie.trim();
+     }
+     else
+     {
+       meta.freebie = '';
+     }
+
+     if(!meta.labels)
+     {
+        meta.labels = [];
+     }
   }
 
   meta.author = author || "";

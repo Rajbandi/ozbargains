@@ -13,10 +13,10 @@
 .git
 .gitignore
 
-# Node.js dependencies:
-node_modules/
+node_modules
 
-*.txt
+*.lock
 
 ozbargains.json
-package-lock.json
+
+*.txt

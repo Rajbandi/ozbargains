@@ -19,13 +19,16 @@ const Action_VoteDown = "Vote Down";
 const Action_Post = "Post";
 const liveActions = [Action_Post, Action_VoteUp, Action_VoteDown];
 const DateFormat = "DD/MM/YYYY hh:mm";
+const TimeZone = 'Australia/Melbourne';
 
 const DateRegex = /\d{1,2}\/\d{1,2}\/\d{4}/;
 const TimeRegex = /\d{1,2}\:\d{1,2}/;
 const ExpiredRegex = /\d{1,2}[\sa-zA-Z]{1,10}\d{1,2}\:\d{1,2}([a-zA-Z]{2})?/;
 const UpcomingRegex = /((\d{1,2}\s[a-zA-Z]{3}(\s\d{1,2}\:\d{1,2})?([a-zA-Z]{2})?)|\d{2})/;
 
-const sleepTime = 5000;
+const sleepTime = 200;
+
+moment.tz.setDefault(TimeZone);
 x.delay(sleepTime);
 
 async function parseDeals() {
@@ -39,9 +42,9 @@ async function parseDeals() {
     try {
       let link = deal.link;
       if (link) {
-        log("Sleeping for ",sleepTime);
+       
         await sleep(sleepTime);
-        log("Woke up after ", sleepTime);
+    
         let details = await scrapeDeal(link);
         if (details) {
 
@@ -109,9 +112,9 @@ async function parseLive() {
 
       
           let url = dealUrl + liveDeal.link;
-          log("Sleeping for ",sleepTime);
+         
           await sleep(sleepTime);
-          log("Woke up after ", sleepTime);
+         
           let deal = await scrapeDeal(url);
           if (deal && deal.description) {
             deals.push(deal);
@@ -172,6 +175,8 @@ function scrapeDeal(dealLink) {
         meta: {
           submitted: "div.submitted",
           image: "img.gravatar@src",
+          labels: ["div.messages ul li"],
+          freebie:"span.nodefreebie@text",
           expired: ".links span.expired",
           upcoming:".links span.inactive"
         },
@@ -199,7 +204,7 @@ function scrapeDeal(dealLink) {
           }
           deal.content = content;
           deal.meta = parseMeta(deal.meta);
-
+          
           if(deal.vote)
           {
             if(!deal.vote.up)
@@ -295,8 +300,10 @@ function parseMeta(meta) {
       }
     }
 
+    
     if (submitDate && submitDate.length > 0) {
       timestamp = moment(submitDate, DateFormat).unix();
+   
     }
 
     let expired = meta.expired;
@@ -321,11 +328,24 @@ function parseMeta(meta) {
        }
     }
 
+     if(meta.freebie)
+     {
+       meta.freebie = meta.freebie.trim();
+     }
+     else
+     {
+       meta.freebie = '';
+     }
+
+     if(!meta.labels)
+     {
+        meta.labels = [];
+     }
   }
 
-  meta.author = author || null;
-  meta.date = submitDate || null;
-  meta.timestamp = timestamp || null;
+  meta.author = author || "";
+  meta.date = submitDate || "";
+  meta.timestamp = timestamp || 0;
   meta.expiredDate = expiredDate || 0;
   meta.upcomingDate = upcomingDate || 0;
 

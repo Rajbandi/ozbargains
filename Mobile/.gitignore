@@ -9,7 +9,7 @@
 .history
 .svn/
 .env
-
+.DS_Store
 # IntelliJ related
 *.iml
 *.ipr

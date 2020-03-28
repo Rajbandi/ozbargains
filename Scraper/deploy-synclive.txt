@@ -1,0 +1,1 @@
+gcloud functions deploy syncLive --entry-point syncLive --region=asia-east2  --memory 256MB --runtime nodejs10 --timeout 540  --trigger-http  --allow-unauthenticated

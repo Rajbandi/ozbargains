@@ -206,12 +206,12 @@ async function updateComments(deal) {
 }
 
 async function deleteDeals() {
-  await deleteCollection(firestore, DEALS_COLLECTION, 1000);
+  await deleteCollection(firestore, DEALS_COLLECTION, 500);
 }
 
 async function deleteAllDeals() {
-  await deleteCollection(firestore, DEALS_COLLECTION, 1000);
-  await deleteCollection(firestore, INVALID_DEALS_COLLECTION, 1000);
+  await deleteCollection(firestore, DEALS_COLLECTION, 500);
+  await deleteCollection(firestore, INVALID_DEALS_COLLECTION, 500);
 }
 
 function deleteCollection(db, collectionPath, batchSize) {

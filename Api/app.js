@@ -1,6 +1,7 @@
 /* jshint esversion:8 */
 
 const express = require("express");
+const compression = require("compression");
 const ozbargain = require("./ozbargain");
 const putenv = require("putenv");
 const app = express();
@@ -8,6 +9,8 @@ const PORT = process.env.PORT || 80;
 const moment = require("moment");
 const log = console.log;
 const logError = console.error;
+
+app.use(compression());
 
 app.get("/", async (req, res) => {
   res.send("API Version ");

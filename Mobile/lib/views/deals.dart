@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:ozbargain/api/dealapi.dart';
+import 'package:flutter_html/flutter_html.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/models/dealfilter.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
+import 'package:ozbargain/viewmodels/thememodel.dart';
 import 'package:ozbargain/views/bottommenu.dart';
 import 'package:ozbargain/views/deal.dart';
+import 'package:ozbargain/views/dealcommon.dart';
+import 'package:provider/provider.dart';
 
 import '../helpers/apphelper.dart';
 
@@ -19,19 +21,27 @@ class DealsView extends StatefulWidget {
   _DealsViewState createState() => _DealsViewState();
 }
 
-class _DealsViewState extends State<DealsView> {
+class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
+{
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Deal> deals = new List<Deal>();
   bool _searchVisible;
+  Color _primaryColor, _accentColor;
   
+  DealCommon _common;
   DealFilter _filter;
   @override
   void initState() {
     super.initState();
+      WidgetsBinding.instance.addObserver(this);
     _floatButtonVisible = false;
     _filter = DealFilter.Today;
     _searchVisible = false;
     _onRefresh();
+    _searchController.addListener(()=> onSearchTextChanged());
+
+   super.initState();
+
   }
 
   TextStyle _nonTitleStyle, _primaryTitle, _highlightTitle;
@@ -39,21 +49,44 @@ class _DealsViewState extends State<DealsView> {
   ThemeData _theme;
 
   final ScrollController _dealsController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
   BuildContext _context;
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _searchController.removeListener(()=> onSearchTextChanged());
+    super.dispose();
+  }
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(state == AppLifecycleState.resumed)
+    {
+      _onRefresh(refresh:true);
+    }
+  }
+
+  onSearchTextChanged()
+  {
+      var text = _searchController.text;
+
+      _onRefresh(search:text);
+  }
+
+
   @override
   Widget build(BuildContext context) {
     _context = context;
+    _common = DealCommon(context, _scaffoldKey);
+
     _theme = Theme.of(context);
-
     _primaryTitle =
-        _theme.primaryTextTheme.subtitle2.copyWith(color: _theme.primaryColor);
+        _theme.primaryTextTheme.bodyText1.copyWith(color: _theme.primaryColor);
     _highlightTitle =
-        _theme.accentTextTheme.subtitle2.copyWith(color: _theme.accentColor);
+        _theme.accentTextTheme.bodyText1.copyWith(color: _theme.accentColor);
 
-    _nonTitleStyle = Theme.of(context)
-        .textTheme
-        .caption
-        .merge(new TextStyle(color: Colors.grey));
+    _nonTitleStyle = _common.nonTitleStyle;
+
     var model = new AppDataModel();
     var listView = ListView.separated(
         controller: _dealsController,
@@ -98,46 +131,73 @@ class _DealsViewState extends State<DealsView> {
         onTapDown: (TapDownDetails t) {
           try {
             FocusScope.of(context).unfocus();
-          } catch (e) {}
+          } catch (e) {
+            print(e);
+          }
         },
         child: Container(
             child: Column(children: <Widget>[
-          Visibility(visible:_searchVisible??false, child:Expanded(child: getFilterSearchRow())),
+          Visibility(visible:_searchVisible??false, child:getFilterSearchRow()),
           Expanded(child: getFilterHeaderRow()),
           Expanded(flex: 15, child: listNotification)
         ])));
-    return Scaffold(
+    return SafeArea(
+      child:
+      Scaffold(
         key: _scaffoldKey,
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Row(children: <Widget>[
-          Expanded(flex:2, child:Text(widget.title ?? "")),
+          Expanded(flex:1, child:Text(widget.title ?? "")),
           Expanded(child:Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
             InkWell(child:Icon(Icons.refresh), onTap: () => { _onRefresh(refresh: true)},),
-            InkWell(child:Icon(Icons.search), onTap: () => { _showSearchRow() },),
-            InkWell(child:Icon(Icons.filter_list), onTap: () => {}),
+            InkWell(child:Icon(Icons.filter_list), onTap: () => { _showSearchRow() }),
+            DropdownButton<String>(
+               hint: Text("Theme"),
+               value: _currentTheme,
+              
+              items: <String>["Light","Dark"].map((String value){
+                return new DropdownMenuItem<String>(
+                  value: value,
+                  child: new Text(value)
+                );
+              }).toList()
+              ,
+            onChanged: (item){
+                _currentTheme = item;
+                print(item);
+                Provider.of<ThemeModel>(context, listen:false).changeTheme(item);
+            },
+            )
           ],),)
           ],) 
         ),
         body: layout,
         floatingActionButton: _getFloatButton(),
-        bottomNavigationBar: BottomMenuView());
+        bottomNavigationBar: BottomMenuView()));
   }
-
+  String _currentTheme="Light";
   bool _floatButtonVisible;
   _getFloatButton() {
     var _floatButton = FloatingActionButton(
         child: Icon(Icons.vertical_align_top),
+        backgroundColor: _theme.primaryColor,
         onPressed: () => {
-              _dealsController.animateTo(
-                0.0,
-                curve: Curves.easeOut,
-                duration: const Duration(milliseconds: 300),
-              )
+             _scrollToTop()
             });
     return Visibility(
         visible: _floatButtonVisible ?? false, child: _floatButton);
+  }
+
+  _scrollToTop()
+  {
+     _dealsController.animateTo(
+                0.0,
+                curve: Curves.easeOut,
+                duration: const Duration(milliseconds: 300),
+              );
   }
 
   _openDeal(Deal d) {
@@ -146,188 +206,45 @@ class _DealsViewState extends State<DealsView> {
         context, MaterialPageRoute(builder: (BuildContext context) => view));
   }
 
-  showSnackMessage(message) {
-    _scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(message),
-    ));
-  }
-
-  copyToClipboard(text) {
-    Clipboard.setData(ClipboardData(text: text));
-    showSnackMessage("Copied $text");
-  }
 
   Widget _getDeal(Deal d) {
-    List<Widget> metaWidgets = new List<Widget>();
-    metaWidgets.add(getNonTitle(d.meta.author));
-
-    var dealDate = AppHelper.getDateFromUnix(d.meta.timestamp ?? 0);
-    var dealFormat = AppHelper.getLocalDateTime(dealDate);
-    metaWidgets.add(getNonTitle(dealFormat));
-    if (d.meta.upcomingDate > 0) {
-      var upcomDate = AppHelper.getDateFromUnix(d.meta.upcomingDate ?? 0);
-      var upcomDiff = DateTime.now().difference(upcomDate);
-      var upcomDays = upcomDiff.inDays;
-      var upcomFormat = AppHelper.getLocalDateTime(upcomDate);
-      var upcomText = "";
-      if (upcomDiff.isNegative) {
-        upcomText = "Starts on $upcomFormat (in ${upcomDays * -1} days)";
-      } else {
-        upcomText = "From $upcomFormat ($upcomDays days ago)";
-      }
-      metaWidgets.add(getNonTitle(upcomText));
-    }
-
-    if (d.meta.expiredDate > 0) {
-      var expiryDate = AppHelper.getDateFromUnix(d.meta.expiredDate);
-      var expiryDiff = DateTime.now().difference(expiryDate);
-      var expiryDays = expiryDiff.inDays;
-      var expiryFormat = AppHelper.getLocalDateTime(expiryDate);
-      var expiryText = "";
-
-      if (!expiryDiff.isNegative) {
-        expiryText = "Expired on $expiryFormat ";
-        if (expiryDays > 0) {
-          expiryText += " (${expiryDiff.inDays} days ago)";
-        }
-      } else {
-        expiryText = "Expires on $expiryFormat ";
-        if (expiryDays > 0) {
-          expiryText += " (in ${expiryDiff.inDays} days)";
-        }
-      }
-      metaWidgets.add(getNonTitle(expiryText));
-    }
-
+    
     return new Container(
-        padding: EdgeInsets.only(top: 2, bottom: 2, left: 2, right: 2),
-        child: Column(
+        padding: EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5),
+        child: Column(  
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            getDealRow(Row(
+            _common.getDealRow(Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Expanded(flex: 6, child: getTitle(d)),
+                Expanded(flex: 6, child: _common.getTitle(d)),
               ],
             )),
-            getDealRow(Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                      flex: 1,
-                      child: Container(
-                          padding: EdgeInsets.only(left: 2, right: 2),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: <Widget>[
-                              getVote((d.vote.up ?? "0") + "+", Colors.green),
-                              getVote((d.vote.down ?? "0") + "-", Colors.red)
-                            ],
-                          ))),
-                  Expanded(
-                      flex: 5,
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: metaWidgets)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      InkWell(
-                        child: Container(
-                            padding: EdgeInsets.only(right: 10),
-                            child: Icon(Icons.content_copy)),
-                        onTap: () => {copyToClipboard(d.link)},
-                      ),
-                      InkWell(
-                          child: Container(
-                              padding: EdgeInsets.only(right: 10),
-                              child: Icon(Icons.open_in_new)),
-                          onTap: () => {})
-                    ],
-                  )
-                ])),
-            getDealRow(Row(
+            _common.getDealRow(_common.getMeta(d)),
+            _common.getDealRow(Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[],
+              children: <Widget>[
+
+                Expanded(child:
+                  
+                  Html(data: d.content??"", padding: EdgeInsets.only(left:2),  onLinkTap: (url) => {
+                AppHelper.openUrl(context, "", url)
+              },)
+                  )
+              ],
             )),
             // getDealRow(Row(children: <Widget>[
             //   getTagsRow(d.tags)
 
             // ],))
-            Align(child: getTagsRow(d.tags), alignment: Alignment.topLeft),
+            Align(child: _common.getTagsRow(d.tags), alignment: Alignment.topLeft),
           ],
         ));
   }
 
-  Widget getTitle(Deal d) {
-    List<InlineSpan> spans = new List<InlineSpan>();
-    if (d.meta != null) {
-      if (d.meta.upcomingDate != null && d.meta.upcomingDate > 0) {
-        spans.add(WidgetSpan(
-            child: Container(
-          child: Text(
-            "UPCOMING",
-            style: _highlightTitle.copyWith(color: Colors.white),
-          ),
-          padding: EdgeInsets.only(right: 2, left: 2),
-          margin: EdgeInsets.only(right: 2),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(2.0), color: Colors.green),
-        )));
-      }
-      if (d.meta.expiredDate != null && d.meta.expiredDate > 0) {
-        spans.add(WidgetSpan(
-            child: Container(
-          child: Text("EXPIRED",
-              style: _highlightTitle.copyWith(color: Colors.white)),
-          padding: EdgeInsets.only(right: 2, left: 2),
-          margin: EdgeInsets.only(right: 2),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(2.0), color: Colors.red),
-        )));
-      }
-    }
-    spans.add(TextSpan(text: d.title, style: _primaryTitle));
-
-    return RichText(text: TextSpan(children: spans));
-  }
-
-  Widget getNonTitle(t) {
-    return Text(t ?? "", style: _nonTitleStyle);
-  }
-
-  Widget getDealRow(child) {
-    return Container(padding: EdgeInsets.only(top: 3, bottom: 3), child: child);
-  }
-
-  Widget getTagsRow(List<String> tags) {
-    var row = Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      runAlignment: WrapAlignment.spaceBetween,
-      direction: Axis.horizontal,
-      children: <Widget>[],
-    );
-
-    tags.forEach((element) {
-      var tagStyle = _nonTitleStyle.copyWith(color: Colors.white);
-      row.children.add(Container(
-          padding: EdgeInsets.only(left: 2, right: 2, top: 2, bottom: 2),
-          margin: EdgeInsets.only(right: 2, top: 2),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(2.0), color: Colors.brown),
-          child: Text(
-            element,
-            style: tagStyle,
-          )));
-    });
-
-    return row;
-  }
+ 
 
   Widget getFilterHeaderRow() {
     var container = Container(
@@ -351,7 +268,16 @@ class _DealsViewState extends State<DealsView> {
   Widget getFilterHeaderItem(DealFilter filter)
   {
     var text = "All";
-    var color = _filter==filter?Colors.blueAccent:Colors.yellow;
+
+
+    var color = _theme.accentColor;
+    var textStyle = _theme.textTheme.bodyText1;
+    if(_filter==filter)
+    {
+        color = _theme.primaryColor;
+        textStyle = textStyle.copyWith(color:Colors.white);
+    }
+    
     var action=()=>{};
     switch(filter)
     {
@@ -397,10 +323,12 @@ class _DealsViewState extends State<DealsView> {
       }
       break;
     }
+    
     return InkWell(child:Container(
           padding: EdgeInsets.only(left:10,right:10, top:10, bottom: 10),
-          child: Text(text, style:_theme.textTheme.bodyText2),
-          decoration: BoxDecoration(color:color),
+          child: Text(text, style:textStyle),
+          decoration: BoxDecoration(color:color,
+          ),
           ), onTap: action,);
   }
 
@@ -408,7 +336,8 @@ class _DealsViewState extends State<DealsView> {
   {
       setState(() {
         _filter = filter;
-        _onRefresh();
+         _onRefresh();
+
       });
   }
 
@@ -418,22 +347,55 @@ class _DealsViewState extends State<DealsView> {
       _searchVisible = !(_searchVisible??false);
     });
   }
+
+  
   Widget getFilterSearchRow() {
     var row = Container(
-        child: Row(
+        child: 
+       
+        Row(
       children: <Widget>[
-        Expanded(flex: 6, child: TextField()),
-        Expanded(
-            child: InkWell(
-          child: Icon(Icons.search),
-          onTap: () => {},
-        )),
+        Expanded(flex: 6, child: TextFormField(
+          controller: _searchController,
+          decoration: InputDecoration(
+                  filled: true,
+                  prefixIcon: Icon(
+                    Icons.search,
+                    size: 28.0,
+                  ),
+                  suffixIcon: IconButton(
+                      icon: Icon(Icons.clear, size:28.0),
+                      onPressed: () {
+                          _searchController.text = "";
+                      })),)),
       ],
-    ));
+
+    ),
+  
+    
+    );
 
     return row;
   }
 
+  Widget getFilterCategories()
+  {
+      var categories = AppDataModel().getCategories();
+      
+    
+      var listView = ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (context, index){
+
+          var cat = categories[index];
+          return Text(cat);
+        },
+        itemCount: categories != null?categories.length:0,
+      );
+
+      return listView;
+  }
+  
   Widget getIcon(icon) {
     return Container(
       alignment: Alignment.topCenter,
@@ -441,62 +403,15 @@ class _DealsViewState extends State<DealsView> {
     );
   }
 
-  Widget getVote(v, Color c) {
-    return Container(
-        alignment: Alignment.center,
-        padding: EdgeInsets.all(1),
-        margin: EdgeInsets.only(bottom: 1),
-        child: Text(
-          v,
-          style: _nonTitleStyle.copyWith(color: Colors.white),
-        ),
-        decoration: BoxDecoration(
-          color: c,
-          borderRadius: BorderRadius.circular(2.0),
-        ));
-  }
-  // ListTile _getDeal(Deal d) {
-  //   return new ListTile(
-  //     contentPadding: EdgeInsets.symmetric(horizontal: 5.0, vertical: 1.0),
-  //     dense: true,
-  //     leading: Container(child: Column(children: <Widget>[],),),
-  //     title: Text(
-  //       d.title,
-  //       style: TextStyle(color: Theme.of(context).primaryColor),
-  //     ),
-  //     subtitle: Padding(
-  //         child:
-  //             Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-  //           Column(
-  //             crossAxisAlignment: CrossAxisAlignment.start,
-  //             children: <Widget>[
-  //               Text(
-  //                 d.meta.author,
-  //               ),
-  //               Text(
-  //                 d.meta.date,
-  //               )
-  //             ],
-  //           ),
-  //           InkWell(
-  //               onTap: () =>
-  //                   {AppHelper.openUrl(context, d.title, d.snapshot.goto)},
-  //               child: Icon(
-  //                 Icons.open_in_browser,
-  //                 color: Theme.of(context).accentColor,
-  //               )),
-  //         ]),
-  //         padding: EdgeInsets.only(top: 2.0)),
-  //   );
-  // }
+  
   bool _isLoading = false;
-  Future<Null> _onRefresh({bool refresh=false}) async {
+  Future<Null> _onRefresh({bool refresh=false,String search=""}) async {
     print("Filtering with $_filter");
     setState((){
       _isLoading = true;
       
     });
-    var list = await AppDataModel().getFilteredDeals(_filter, refresh:refresh);
+    var list = await AppDataModel().getFilteredDeals(_filter, refresh:refresh, search:search);
     setState(() {
 
       print("*************** Refreshing deals ${list.length} ${this.deals.length}");
@@ -508,6 +423,7 @@ class _DealsViewState extends State<DealsView> {
       print("============== ${this.deals.length}");
       _isLoading = false;
     });
+    _scrollToTop();
     return null;
   }
 }
