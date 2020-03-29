@@ -27,8 +27,8 @@ class _BottomMenuViewState extends State<BottomMenuView> {
           title: Text('Notifications'),
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.info),
-          title: Text('About'),
+          icon: Icon(Icons.settings),
+          title: Text('Settings'),
         ),
       ],);
     

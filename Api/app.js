@@ -3,14 +3,29 @@
 const express = require("express");
 const compression = require("compression");
 const ozbargain = require("./ozbargain");
+const bodyParser = require('body-parser');
+const {PubSub} = require('@google-cloud/pubsub');
+
 const putenv = require("putenv");
 const app = express();
 const PORT = process.env.PORT || 80;
+const SOCKS_PORT = process.env.SOCKS_PORT || 8080;
 const moment = require("moment");
 const log = console.log;
 const logError = console.error;
 
+const pubsub = new PubSub();
+
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
+
+
+
 app.use(compression());
+app.use(express.urlencoded());
+
+// Parse JSON bodies (as sent by API clients)
+app.use(express.json());
 
 app.get("/", async (req, res) => {
   res.send("API Version ");
@@ -94,7 +109,66 @@ app.get("/api/syncdeals", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
+app.post("/api/pushdeals", (req, res)=>{
+
+  const message = req.body ? req.body.message : null;
+  
+  try{
+    if (message) {
+      const buffer = Buffer.from(message.data, 'base64').toString('utf-8');
+      const data = buffer ? buffer.toString() : null;
+ 
+      console.log(`Received message ${message.messageId}:`);
+
+      if(data)
+      {
+          console.log("sending deals ");
+          io.emit("deals", data);
+          console.log("done");
+      }
+      else
+      {
+        console.error("Invalid data received ");
+      }
+    }
+    else
+    {
+      console.log(" ******* No Message received *******");
+    }
+  }
+  catch(e)
+  {
+      console.error("An error occurred ",e);
+  }
+  res.status(204).send();
+});
+
+io.on('connection', (socket)=>{
+  var address = socket.handshake.address;
+  log('New connection from ' + address);
+  
+  socket.on('disconnecting',(reason)=>{
+    console.log("Disconnecting ", reason);
+    socket.emit("Disconnecting ...");
+  });
+
+  socket.on('disconnect', (reason)=>{
+      console.log('Socket disconnected', reason);
+  });
+
+  socket.on('error', (error)=>{
+      console.error("An error occurred for socket ", error);
+  });
+
+  socket.emit('message', 'Connected successfuly...');
+});
+
+io.on('disconnect',()=>{
+  log("Disconnecting...");
+});
+
+
+server.listen(PORT, () => {
   log(" Starting api ...");
  
   if(process.env.Local)

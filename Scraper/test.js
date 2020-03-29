@@ -4,14 +4,20 @@ const putenv = require("putenv");
     const moment = require('moment-timezone');
 
 (async()=>{
-
+    putenv(
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "OzBargains.json"
+      );
+      
     let url = "https://www.ozbargain.com.au/node/524178";
     //let url="https://www.ozbargain.com.au/node/526612";
     let deal = await ozbargain.scrapeDeal(url);
 
     console.log(deal);
 
+     //ozbargain.parseLive();
 
+     await ozbargain.publishDeals([deal]);
 })();
 
 // (async () => {

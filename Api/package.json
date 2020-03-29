@@ -10,12 +10,16 @@
   },
   "dependencies": {
     "@google-cloud/firestore": "^3.7.1",
+    "@google-cloud/pubsub": "^1.6.0",
     "axios": "^0.19.2",
+    "body-parser": "^1.19.0",
     "cheerio": "^1.0.0-rc.3",
     "compression": "^1.7.4",
     "express": "^4.17.1",
     "moment-timezone": "^0.5.28",
     "putenv": "^2.0.4",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "^2.3.0",
     "x-ray": "^2.3.4"
   },
   "devDependencies": {

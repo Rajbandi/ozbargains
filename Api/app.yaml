@@ -12,5 +12,13 @@
 # limitations under the License.
 
 # [START gae_quickstart_yaml]
-runtime: nodejs10
+runtime: nodejs
+env: flex
+
+manual_scaling:
+    instances: 1
+
+network:
+    session_affinity: true
+
 # [END gae_quickstart_yaml]
