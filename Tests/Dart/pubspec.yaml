@@ -1,0 +1,6 @@
+name: ozbargain
+description: Dart
+
+dependencies:
+    dio:
+    socket_io_client: ^0.9.9

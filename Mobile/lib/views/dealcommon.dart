@@ -189,7 +189,7 @@ class DealCommon {
         });
       }
     }
-    spans.add(TextSpan(text: d.title, style: currentTheme.textTheme.headline6));
+    spans.add(WidgetSpan(child: Opacity(opacity:0.85,child:Text(d.title, style: currentTheme.textTheme.headline6))));
 
     return RichText(text: TextSpan(children: spans));
   }

@@ -79,14 +79,16 @@ class DealsApi
   Dio _dio;
   String _baseUrl;
   Logger _log = Logger();
-  factory DealsApi() {
+
+  factory DealsApi(String url) {
+    _api._baseUrl = url;
     return _api;
   }
-
+ 
   DealsApi._internal()
   {
      //_baseUrl = "http://192.168.1.189";
-    _baseUrl = "https://ozbargains.omkaars.dev";
+   
     _dio = new Dio();
   }
 
@@ -128,5 +130,6 @@ class DealsApi
 
     return deals;
   }
+
 
 }

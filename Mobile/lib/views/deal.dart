@@ -48,10 +48,10 @@ DealCommon _common;
               ),
             
               _common.getTagsRow(deal.tags),
-              Html(data: widget.deal.description,
+             Opacity(opacity:0.85,child: Html(data: widget.deal.description,
               onLinkTap: (url) => {
                 AppHelper.openUrl(context, "", url)
-              },)
+              },))
               
               ])));
 

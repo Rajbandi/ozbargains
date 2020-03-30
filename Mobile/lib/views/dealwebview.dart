@@ -19,13 +19,17 @@ class _DealWebState extends State<DealWebView> {
 
       url: widget.url,
       appBar: new AppBar(
-        
+        actions: <Widget>[
+          Icon(Icons.refresh)
+        ],
       ),
       withZoom: true,
       withLocalStorage: true,
       withJavascript: true,
+      enableAppScheme: true,
       resizeToAvoidBottomInset: false,
       hidden: true,
+      scrollBar: true,      
       initialChild: Container(
         child: const Center(
           child: CircularProgressIndicator()

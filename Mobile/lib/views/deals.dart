@@ -233,9 +233,9 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
 
                 Expanded(child:
                   
-                  Html(data: d.content??"", padding: EdgeInsets.only(left:2),  onLinkTap: (url) => {
+                  Opacity(opacity:0.85,child:Html(data: d.content??"", padding: EdgeInsets.only(left:2),  onLinkTap: (url) => {
                 AppHelper.openUrl(context, "", url)
-              },)
+              },))
                   )
               ],
             )),

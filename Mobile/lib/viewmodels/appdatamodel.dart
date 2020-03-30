@@ -1,19 +1,65 @@
 import "package:ozbargain/api/dealapi.dart";
+import 'package:ozbargain/api/dealsocket.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/models/dealfilter.dart';
 
 class AppDataModel {
   DealsApi _api;
-
+  String _url = "https://ozbargains.omkaars.dev";
   static final AppDataModel _model = new AppDataModel._internal();
 
+  DealSocket _socket;
   factory AppDataModel() {
     return _model;
   }
 
   AppDataModel._internal() {
-    _api = new DealsApi();
+    _api = DealsApi(_url);
+
+    _socket = DealSocket(_url);
+    
+    
+    _socket.controller.stream.listen((socketDeals) {
+        print('*********** received a message from controller ${socketDeals.length}');
+        
+      }, onError: (error, StackTrace stackTrace) {
+        print('Error received from controller ${error} ${stackTrace}');
+      }, onDone: () {
+        print("controller is closed");
+      });
+
+    _socket.open();
+    
+  }
+
+  void refreshDeals(List<Deal> d)
+  {
+      print("refreshing deals ${d.length}");
+      if(this.deals != null && d!=null && d.length>0)
+      {
+          var newDeals = this.deals.map((deal){
+
+              var d2 = d.firstWhere((d1) => d1.dealId == deal.dealId);
+              if(d2 != null)
+              {
+                 return d2;
+              }
+              else
+              {
+                return deal;
+              }
+
+          }).toList();
+          print("Refreshing new deals ${newDeals.length}");
+          if(newDeals.length>0)
+          {
+            this.deals.clear();
+            this.deals.addAll(newDeals);
+          }
+
+          print("Refreshed successfully");
+      }
   }
 
   List<Deal> deals = new List<Deal>();
