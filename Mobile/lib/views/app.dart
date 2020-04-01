@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/viewmodels/thememodel.dart';
+import 'package:ozbargain/views/settings.dart';
 import 'package:provider/provider.dart';
 
 import 'home.dart';
@@ -32,7 +33,12 @@ NotificationAppLaunchDetails notificationAppLaunchDetails;
     return MaterialApp(
       title: 'OZBargain Deals',
       theme: Provider.of<ThemeModel>(context).currentTheme,
-      home: HomePage(title: 'OZBargain Deals'),
+      initialRoute: '/',
+      routes: {
+        
+        '/': (context)=> HomePage(title: 'OZBargain Deals'),
+        '/settings': (context)=> SettingsPage()
+      },
     );
   }
 

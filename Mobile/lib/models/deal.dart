@@ -1,3 +1,4 @@
+
 class Deal {
   String description;
   String link;

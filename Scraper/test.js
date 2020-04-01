@@ -8,16 +8,16 @@ const putenv = require("putenv");
         "GOOGLE_APPLICATION_CREDENTIALS",
         "OzBargains.json"
       );
-      
-    let url = "https://www.ozbargain.com.au/node/524178";
-    //let url="https://www.ozbargain.com.au/node/526612";
+
+    //let url = "https://www.ozbargain.com.au/node/524178";
+    let url="https://www.ozbargain.com.au/node/527817";
     let deal = await ozbargain.scrapeDeal(url);
 
     console.log(deal);
 
      //ozbargain.parseLive();
 
-     await ozbargain.publishDeals([deal]);
+    // await ozbargain.publishDeals([deal]);
 })();
 
 // (async () => {

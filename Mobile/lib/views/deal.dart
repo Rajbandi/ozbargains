@@ -29,8 +29,7 @@ DealCommon _common;
 
     _common = DealCommon(context, _scaffoldKey);
     var deal = widget.deal;
-    var titleStyle = Theme.of(context).textTheme.headline6;
-    
+   
     return SafeArea(child:Scaffold(
          key: _scaffoldKey,
         resizeToAvoidBottomInset: false,

@@ -1,4 +1,4 @@
-package com.example.ozbargain
+package com.omkaars.ozbargain
 
 import androidx.annotation.NonNull;
 import io.flutter.embedding.android.FlutterActivity

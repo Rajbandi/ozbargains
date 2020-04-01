@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/models/dealfilter.dart';
@@ -9,8 +8,6 @@ import 'package:ozbargain/views/bottommenu.dart';
 import 'package:ozbargain/views/deal.dart';
 import 'package:ozbargain/views/dealcommon.dart';
 import 'package:provider/provider.dart';
-
-import '../helpers/apphelper.dart';
 
 class DealsView extends StatefulWidget {
   DealsView({Key key, this.title}) : super(key: key);
@@ -62,7 +59,8 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if(state == AppLifecycleState.resumed)
     {
-      _onRefresh(refresh:true);
+      print("******* Resumed *****");
+     // _onRefresh(refresh:true);
     }
   }
 
@@ -232,11 +230,8 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
               children: <Widget>[
 
                 Expanded(child:
-                  
-                  Opacity(opacity:0.85,child:Html(data: d.content??"", padding: EdgeInsets.only(left:2),  onLinkTap: (url) => {
-                AppHelper.openUrl(context, "", url)
-              },))
-                  )
+                  Opacity(opacity:0.85, child: Container(child:Text(d.content??""), padding: EdgeInsets.only(left:2) )
+                  ))
               ],
             )),
             // getDealRow(Row(children: <Widget>[
@@ -247,8 +242,8 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver
           ],
         ));
   }
+//here goes the function 
 
- 
 
   Widget getFilterHeaderRow() {
     var container = Container(

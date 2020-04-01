@@ -17,18 +17,22 @@ class _BottomMenuViewState extends State<BottomMenuView> {
   @override
   Widget build(BuildContext context) {
 
-    return  new BottomNavigationBar(items: const <BottomNavigationBarItem>[
+    return  new BottomNavigationBar(
+      
+      
+      items: const <BottomNavigationBarItem>[
         BottomNavigationBarItem(
           icon: Icon(Icons.home),
           title: Text('Deals'),
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.notifications),
-          title: Text('Notifications'),
+          title: Text('Alerts'),
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.settings),
           title: Text('Settings'),
+          
         ),
       ],);
     

@@ -273,10 +273,14 @@ function parseDescription(description) {
       child2.text(child2.text() + "...");
       html += $.html(childs[1]) + "\n";
     }
+    let text = cheerio.load(html).text();
+    return text;
   } catch (e) {
     logError("An error occurred while parsing description ", e, description);
+  
+    return "";
   }
-  return html;
+ 
 }
 function parseMeta(meta) {
   let author, submitDate, timestamp, expiredDate, upcomingDate;

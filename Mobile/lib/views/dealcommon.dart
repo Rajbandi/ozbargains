@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/deal.dart';
+
 
 class DealCommon {
   BuildContext context;
@@ -20,10 +20,11 @@ class DealCommon {
   DealCommon(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey) {
     this.context = context;
     this.scaffoldKey = scaffoldKey;
+
     currentTheme = Theme.of(context);
+
     primaryColor = currentTheme.primaryColor;
     accentColor = currentTheme.accentColor;
-
     nonTitleStyle =
         currentTheme.textTheme.caption.merge(new TextStyle(color: Colors.grey));
 
@@ -38,6 +39,8 @@ class DealCommon {
   }
 
   Widget getMeta(Deal d, {bool authorImage = false, bool gotoImage = false}) {
+
+
     List<Widget> metaWidgets = new List<Widget>();
     metaWidgets.add(getNonTitle(d.meta.author));
 
@@ -104,15 +107,20 @@ class DealCommon {
     if (gotoImage) {
       widgets.add(InkWell(
         child: Container(
-            padding: EdgeInsets.only(top: 20),
+            padding: EdgeInsets.only(top:5),
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   getNetworkImage(d.snapshot.image, 75, 75),
+                  Container(
+                    color: primaryColor,
+                    padding: EdgeInsets.all(2),
+                    child:
                   Text(
-                    "Goto",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    "Go to Deal",
+                    style: currentTheme.textTheme.subtitle1.copyWith(color: Colors.white70, fontWeight: FontWeight.bold) ,
+                  )
                   )
                 ])),
         onTap: () => {AppHelper.openUrl(context, "", d.snapshot.goto)},
@@ -189,38 +197,78 @@ class DealCommon {
         });
       }
     }
-    spans.add(WidgetSpan(child: Opacity(opacity:0.85,child:Text(d.title, style: currentTheme.textTheme.headline6))));
+    spans.add(WidgetSpan(child: Opacity(opacity:0.85,child:Text(d.title, style: currentTheme.textTheme.headline6.copyWith(fontSize: 18.0)))));
 
     return RichText(text: TextSpan(children: spans));
   }
 
   Widget getCopyLinks(Deal d) {
+
+  
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        InkWell(
-          child: Container(
-              padding: EdgeInsets.only(right: 20),
-              child: Icon(
-                FontAwesomeIcons.copy,
-                color: primaryColor,
-              )),
-          onTap: () => {copyToClipboard("Copied OzBargains Url ", d.link)},
-        ),
-        InkWell(
-          child: Container(
-              padding: EdgeInsets.only(right: 20),
-              child: Icon(
-                Icons.content_copy,
-                color: accentColor,
-              )),
-          onTap: () =>
-              {copyToClipboard("Copied external deal link ", d.snapshot.goto)},
-        ),
+        titleMenu(d)
+       
       ],
     );
   }
+  
+  Widget titleMenu(Deal d) => PopupMenuButton<int>(
+          itemBuilder: (context) => [
+              PopupMenuItem(
+                  value: 1,
+                  child: titleMenuItem(Icon(Icons.open_in_new), Text("Goto Deal"))
+                ),
+                 PopupMenuItem(
+                  value: 2,
+                  child: titleMenuItem(Icon(Icons.share), Text("Share Deal"))
+                ),  
 
+                PopupMenuItem(
+                  value: 3,
+                  child: titleMenuItem(Icon(Icons.content_copy, color: primaryColor), Text("Copy OZBargain link"))
+                  
+                ),
+                PopupMenuItem(
+                  value: 4,
+                  child: titleMenuItem(Icon(Icons.content_copy, color:accentColor), Text("Copy Deal link"))
+                ),
+               
+              ],
+          initialValue: 1,
+          onCanceled: () {
+          },
+          onSelected: (value) {
+             if(value ==3)
+             {
+               copyToClipboard("Copied ", d.link);
+             }
+             else
+             if(value == 4)
+             {
+               copyToClipboard("Copied ", d.snapshot.goto);
+             }
+             else
+             if(value == 2)
+             {
+               AppHelper.shareData("OZBargain Deal", d.snapshot.goto);
+             }
+             else
+             if(value == 1)
+             {
+               AppHelper.openUrl(context, "", d.snapshot.goto);
+             }
+
+          },
+          icon: Icon(FontAwesomeIcons.listAlt, color: primaryColor )
+        );
+
+  Widget titleMenuItem(Icon icon, Text txt) => Row(
+    children: <Widget>[
+                    Padding(padding: EdgeInsets.only(right:5),child:icon),
+                    txt
+                  ],);
   Widget getVotes(Deal d) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
