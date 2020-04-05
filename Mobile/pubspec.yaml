@@ -34,16 +34,18 @@ dependencies:
   url_launcher: ^5.4.2
   share: ^0.6.3+6
   settings_ui: ^0.2.0
-  flutter_inappwebview:
-    git:
-      url: https://github.com/pichillilorenzo/flutter_inappwebview.git
+  flutter_webview_plugin: 
+    git: 
+      url: https://github.com/fluttercommunity/flutter_webview_plugin.git
       ref: master
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_native_splash: ^0.1.9
-
+  flutter_native_splash: 
+    git:
+      url: https://github.com/henriquearthur/flutter_native_splash.git
+      ref: master
+  shared_preferences: ^0.5.6+3
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

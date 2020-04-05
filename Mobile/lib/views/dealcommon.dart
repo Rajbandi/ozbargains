@@ -18,6 +18,9 @@ class DealCommon {
   TextStyle highlightTitle;
 
   DealCommon(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey) {
+
+    AppHelper.scaffoldKey = scaffoldKey;
+
     this.context = context;
     this.scaffoldKey = scaffoldKey;
 
@@ -113,7 +116,9 @@ class DealCommon {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
                   getNetworkImage(d.snapshot.image, 75, 75),
-                  Container(
+                  Visibility(
+                    visible: AppHelper.isUrlValid(d.snapshot.goto),
+                    child:Container(
                     color: primaryColor,
                     padding: EdgeInsets.all(2),
                     child:
@@ -121,7 +126,7 @@ class DealCommon {
                     "Go to Deal",
                     style: currentTheme.textTheme.subtitle1.copyWith(color: Colors.white70, fontWeight: FontWeight.bold) ,
                   )
-                  )
+                  ))
                 ])),
         onTap: () => {AppHelper.openUrl(context, "", d.snapshot.goto)},
       ));
@@ -242,12 +247,12 @@ class DealCommon {
           onSelected: (value) {
              if(value ==3)
              {
-               copyToClipboard("Copied ", d.link);
+               AppHelper.copyToClipboard("Copied ", d.link);
              }
              else
              if(value == 4)
              {
-               copyToClipboard("Copied ", d.snapshot.goto);
+               AppHelper.copyToClipboard("Copied ", d.snapshot.goto);
              }
              else
              if(value == 2)
@@ -304,17 +309,6 @@ class DealCommon {
         ));
   }
 
-  showSnackMessage(message) {
-    scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(message),
-      duration: Duration(seconds: 2),
-    ));
-  }
-
-  copyToClipboard(msg, text) {
-    Clipboard.setData(ClipboardData(text: text));
-    showSnackMessage("$msg \n$text");
-  }
-
+ 
  
 }

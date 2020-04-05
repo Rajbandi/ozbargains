@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/viewmodels/thememodel.dart';
+import 'package:ozbargain/views/alerts.dart';
+import 'package:ozbargain/views/dealroute.dart';
+import 'package:ozbargain/views/mydeals.dart';
 import 'package:ozbargain/views/settings.dart';
 import 'package:provider/provider.dart';
 
@@ -22,23 +25,55 @@ NotificationAppLaunchDetails notificationAppLaunchDetails;
  
     @override
   initState() {
+
     _requestIOSPermissions();
     _initializeNotifications(); 
+    _loadApp();
     AppHelper.flutterLocalNotificationsPlugin = flutterLocalNotificationsPlugin;
+
   }
   BuildContext context;
+
+  _loadApp() async {
+    await AppHelper.getSharedPreferences();
+    AppHelper.loadSettings();
+    // you can load here any other data or external data that your app might need
+    if(this.context != null)
+    {
+        if(AppHelper.settings != null)
+        {
+          var theme = AppHelper.settings.theme;
+          AppHelper.changeTheme(context, theme);
+        }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+
+   
     this.context = context;
-    return MaterialApp(
+
+return MaterialApp(
       title: 'OZBargain Deals',
       theme: Provider.of<ThemeModel>(context).currentTheme,
       initialRoute: '/',
-      routes: {
-        
-        '/': (context)=> HomePage(title: 'OZBargain Deals'),
-        '/settings': (context)=> SettingsPage()
+      onGenerateRoute: (RouteSettings settings){
+        switch(settings.name)
+        {
+          case '/mydeals': return new DealRoute(builder: (_)=> new MyDealsPage(title: 'My Deals'));
+          case '/alerts': return new DealRoute(builder: (_)=> new DealAlertsPage(title: 'Deal Alerts'));
+          case '/settings': return new DealRoute(builder: (_)=> new SettingsPage(title: 'settings'));
+          default:
+            return new DealRoute(builder: (_)=> new HomePage(title: 'OZBargain Deals'));
+        }
       },
+      // routes: {
+        
+      //   '/': (context)=> HomePage(title: 'OZBargain Deals'),
+      //   '/alerts': (context)=> DealAlertsPage(title: 'Deal alerts'),
+      //   '/settings': (context)=> SettingsPage()
+      // },
     );
   }
 

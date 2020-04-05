@@ -63,6 +63,8 @@ class AppDataModel {
   }
 
   List<Deal> deals = new List<Deal>();
+  List<Deal> myDeals = new List<Deal>();
+
   Future<List<Deal>> getDeals(DealsQuery q) async {
 
     if(this.deals != null)

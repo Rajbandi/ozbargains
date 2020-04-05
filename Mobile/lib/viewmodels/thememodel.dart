@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ozbargain/helpers/apphelper.dart';
 
 enum ThemeType { Light, Dark }
 
@@ -15,12 +16,17 @@ class ThemeModel extends ChangeNotifier {
   ThemeType _themeType = ThemeType.Dark;
 
   ThemeModel() {
+    var theme = lightTheme;
+    
     currentTheme = lightTheme;
   }
-
+  String get currentThemeName {
+    return currentTheme== darkTheme?"Dark":"Light";
+  }
   changeTheme(String theme)
   {
-      if(theme == "Dark")
+      var themeStr = theme??"light";
+      if(themeStr.toLowerCase() == "dark")
       {
           currentTheme = darkTheme;
       }
@@ -28,6 +34,7 @@ class ThemeModel extends ChangeNotifier {
       {
         currentTheme = lightTheme;
       }
+     
        return notifyListeners();
   }
 
