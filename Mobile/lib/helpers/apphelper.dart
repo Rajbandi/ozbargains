@@ -11,13 +11,12 @@ import 'package:ozbargain/views/dealwebview.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AppHelper {
-  AppHelper()
-  {
-      refreshSettings();
-      
-      }
+  AppHelper() {
+    refreshSettings();
+  }
   static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   static int currentTimeInSeconds(DateTime d) {
@@ -30,12 +29,22 @@ class AppHelper {
     //await DealBrowser().open(url: url, options: InAppBrowserClassOptions());
 
     if (isUrlValid(url)) {
-      var view = new DealWebView(
-        title: title,
-        url: url,
-      );
-      Navigator.push(
-          context, MaterialPageRoute(builder: (BuildContext context) => view));
+      if (settings.openBrowser) {
+
+      var result = await launch(url);
+      if(!result)
+      {
+        print(" Unabled open link");
+      }
+
+      } else {
+        var view = new DealWebView(
+          title: title,
+          url: url,
+        );
+        Navigator.push(context,
+            MaterialPageRoute(builder: (BuildContext context) => view));
+      }
     } else {
       showSnackError("Invalid Url : $url");
     }
@@ -108,7 +117,6 @@ class AppHelper {
     if (show) showSnackMessage("$msg \n$text");
   }
 
-
   static SharedPreferences _sharedPreferences;
 
   static SharedPreferences get preferences {
@@ -116,67 +124,58 @@ class AppHelper {
     return _sharedPreferences;
   }
 
-  static getSharedPreferences() async
-  {
-    if(_sharedPreferences == null)
-    {
-         _sharedPreferences = await SharedPreferences.getInstance();
+  static getSharedPreferences() async {
+    if (_sharedPreferences == null) {
+      _sharedPreferences = await SharedPreferences.getInstance();
     }
   }
-  
+
   static AppSettings _settings;
 
-  static AppSettings get settings{
+  static AppSettings get settings {
     loadSettings();
     return _settings;
   }
-  
-  static updateSettings()
-  {
-      print("******** updating settings ********");
-      preferences.setString("settings",  jsonEncode(settings.toJson()));
 
+  static updateSettings() {
+    print("******** updating settings ********");
+    preferences.setString("settings", jsonEncode(settings.toJson()));
   }
 
-  static refreshSettings() 
-  {
-      loadSettings(refresh:true);
+  static refreshSettings() {
+    loadSettings(refresh: true);
   }
 
-  static loadSettings({bool refresh=false})
-  {
-      
-      if(_settings == null || refresh)
-      {
-        print("Loading settings");
+  static loadSettings({bool refresh = false}) {
+    if (_settings == null || refresh) {
+      print("Loading settings");
       var jsonString = preferences.getString("settings");
-      try{
-          _settings = AppSettings.fromJson(jsonDecode(jsonString));
-      }
-      catch(e)
-      {
+      try {
+        _settings = AppSettings.fromJson(jsonDecode(jsonString));
+      } catch (e) {
         _settings = AppSettings();
         print(e);
       }
 
-       print("Settings $_settings");
-      }
+      print("Settings $_settings");
+    }
   }
 
-  static String getCurrentTheme(BuildContext context)
-  {
-      return Provider.of<ThemeModel>(context, listen:false).currentThemeName;
+  static String getCurrentTheme(BuildContext context) {
+    return Provider.of<ThemeModel>(context, listen: false).currentThemeName;
   }
-  static changeTheme(BuildContext context, String theme) async
-  { 
-     
 
-      var themeStr = theme??"light";
+  static changeTheme(BuildContext context, String theme) async {
+    var themeStr = theme ?? "light";
 
-      Provider.of<ThemeModel>(context, listen:false).changeTheme(theme);
+    Provider.of<ThemeModel>(context, listen: false).changeTheme(theme);
 
-      AppHelper.settings.theme = themeStr;
-      updateSettings();
+    AppHelper.settings.theme = themeStr;
+    updateSettings();
   }
-  
+
+  static changeOpenBrowser(bool openBrowser) {
+    AppHelper.settings.openBrowser = openBrowser;
+    updateSettings();
+  }
 }

@@ -4,10 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:ozbargain/models/pagetypes.dart';
 
 class BottomMenuView extends StatefulWidget {
-  BottomMenuView({Key key, this.title, this.pageType}) : super(key: key)
-  {
-    
-  }
+  BottomMenuView({Key key, this.title, this.pageType}) : super(key: key);
+ 
 
   final String title;
   
@@ -33,14 +31,14 @@ class _BottomMenuViewState extends State<BottomMenuView> {
           icon: Icon(Icons.home),
           title: Text('Deals'),
         ),
-          BottomNavigationBarItem(
-          icon: Icon(Icons.list),
-          title: Text('My Deals'),
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
-          title: Text('Alerts'),
-        ),
+        //   BottomNavigationBarItem(
+        //   icon: Icon(Icons.list),
+        //   title: Text('My Deals'),
+        // ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.notifications),
+        //   title: Text('Alerts'),
+        // ),
         BottomNavigationBarItem(
           icon: Icon(Icons.settings),
           title: Text('Settings'),
@@ -51,13 +49,13 @@ class _BottomMenuViewState extends State<BottomMenuView> {
       onTap: (value) {
     
         switch (value) {
+          // case 1:
+          //   Navigator.pushReplacementNamed(context, '/mydeals');
+          //   break;
+          // case 2:
+          //       Navigator.pushReplacementNamed(context, '/alerts');
+          //   break;
           case 1:
-            Navigator.pushReplacementNamed(context, '/mydeals');
-            break;
-          case 2:
-                Navigator.pushReplacementNamed(context, '/alerts');
-            break;
-          case 3:
               Navigator.pushReplacementNamed(context, '/settings');
           break;
           default:

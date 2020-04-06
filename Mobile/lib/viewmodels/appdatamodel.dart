@@ -1,6 +1,7 @@
 import "package:ozbargain/api/dealapi.dart";
 import 'package:ozbargain/api/dealsocket.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
+import 'package:ozbargain/models/alertrule.dart';
 import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/models/dealfilter.dart';
 
@@ -64,7 +65,8 @@ class AppDataModel {
 
   List<Deal> deals = new List<Deal>();
   List<Deal> myDeals = new List<Deal>();
-
+  List<AlertRule> rules = new List<AlertRule>();
+  
   Future<List<Deal>> getDeals(DealsQuery q) async {
 
     if(this.deals != null)

@@ -176,7 +176,7 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
   bool _floatButtonVisible;
   _getFloatButton() {
     var _floatButton = FloatingActionButton(
-        child: Icon(Icons.vertical_align_top),
+        child: Icon(Icons.vertical_align_top, color: Colors.white),
         backgroundColor: _theme.primaryColor,
         onPressed: () => {_scrollToTop()});
     return Visibility(
