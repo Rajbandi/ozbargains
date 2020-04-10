@@ -67,7 +67,7 @@ class _DealFilterViewState extends State<DealFilterView> {
               child: Scaffold(
                   key: _scaffoldKey,
                   appBar: AppBar(
-                    title: Text("Add/Edit Alert"),
+                    title: Text("Add/Edit Filter"),
                     leading: InkWell(
                         child: Icon(Icons.arrow_back),
                         onTap: () {
@@ -82,7 +82,6 @@ class _DealFilterViewState extends State<DealFilterView> {
                         padding: EdgeInsets.symmetric(
                             horizontal: 16.0, vertical: 8.0),
                         child: new TextField(
-                          focusNode: _nameFocus,
                           controller: _nameController,
                           maxLength: 20,
                           onTap: () => _isTextField = true,
@@ -139,7 +138,7 @@ class _DealFilterViewState extends State<DealFilterView> {
     }
 
     if (!validName) {
-      AppHelper.showSnackError("Alert name is required");
+      AppHelper.showSnackError("Filter name is required");
       return false;
     }
     ruleFilter.rules.removeWhere((r) => (r.suffix ?? "").trim().length == 0);
@@ -195,7 +194,7 @@ class _DealFilterViewState extends State<DealFilterView> {
           setState(() {
             ruleFilter.rules.removeAt(index);
             if (ruleFilter.rules.length > 0) {
-              print("Removing alert filter");
+              print("Removing deal filter");
               var notContain = ruleFilter.rules.firstWhere(
                   (r) => r.condition == FilterRule.conditionNotContains,
                   orElse: () => null);
@@ -261,14 +260,10 @@ class _DealFilterViewState extends State<DealFilterView> {
   _getSuffixWidget(FilterRule rule) {
     var controller = TextEditingController(text: rule.suffix);
     return TextField(
-        onTap: () => _isTextField = true,
-        onEditingComplete: () => _isTextField = false,
         controller: controller,
-        decoration: InputDecoration(
-          isDense: true,
-        ),
+        
         onChanged: (value) => {
-              setState(() => {rule.suffix = value})
+              rule.suffix = value
             });
   }
 
