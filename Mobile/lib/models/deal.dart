@@ -129,6 +129,7 @@ class Meta {
   String freebie;
   int expiredDate;
   int upcomingDate;
+  String alertName;
 
   Meta({this.timestamp, this.submitted, this.image, this.author, this.date, this.expiredDate, this.upcomingDate});
 
@@ -142,6 +143,7 @@ class Meta {
     upcomingDate = json['upcomingDate'];
     labels = json['labels'];
     freebie = json['freebie'];
+    alertName = json['alertName']??"";
   }
 
   Map<String, dynamic> toJson() {
@@ -155,8 +157,11 @@ class Meta {
     data['upcomingDate'] = this.upcomingDate;
     data['freebie'] = this.freebie;
     data['labels'] = this.labels;
+    data['alertName'] = this.alertName??"";
     return data;
   }
+
+  
 }
 
 

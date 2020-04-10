@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/deal.dart';
-import 'package:ozbargain/models/dealfilter.dart';
+import 'package:ozbargain/models/dealfiltertype.dart';
 import 'package:ozbargain/models/pagetypes.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/views/bottommenu.dart';
@@ -24,13 +24,13 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
   Color _primaryColor, _accentColor;
 
   DealCommon _common;
-  DealFilter _filter;
+  DealFilterType _filter;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _floatButtonVisible = false;
-    _filter = DealFilter.Today;
+    _filter = DealFilterType.Today;
     _searchVisible = false;
     _onRefresh();
     _searchController.addListener(() => onSearchTextChanged());
@@ -131,7 +131,7 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
             appBar: AppBar(
                 title: Row(
               children: <Widget>[
-                Expanded(flex: 1, child: Text(widget.title ?? "")),
+                Expanded(flex: 4, child: Text(widget.title ?? "")),
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -143,25 +143,24 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
                       InkWell(
                           child: Icon(Icons.filter_list),
                           onTap: () => {
-                                AppHelper.showNotificationWithoutSound()
-                                //_showSearchRow()
+                                _showSearchRow()
                               }),
-                      Container(
-                          child: DropdownButton<String>(
-                        hint: Text("Theme"),
-                        value: _currentTheme,
-                        items: <String>["Light", "Dark"].map((String value) {
-                          return new DropdownMenuItem<String>(
-                            value: value,
-                            child: new Text(value),
-                          );
-                        }).toList(),
-                        onChanged: (item) {
-                          _currentTheme = item;
+                      // Container(
+                      //     child: DropdownButton<String>(
+                      //   hint: Text("Theme"),
+                      //   value: _currentTheme,
+                      //   items: <String>["Light", "Dark"].map((String value) {
+                      //     return new DropdownMenuItem<String>(
+                      //       value: value,
+                      //       child: new Text(value),
+                      //     );
+                      //   }).toList(),
+                      //   onChanged: (item) {
+                      //     _currentTheme = item;
 
-                          AppHelper.changeTheme(context, item);
-                        },
-                      ))
+                      //     AppHelper.changeTheme(context, item);
+                      //   },
+                      // ))
                     ],
                   ),
                 )
@@ -242,19 +241,19 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
       scrollDirection: Axis.horizontal,
       shrinkWrap: true,
       children: <Widget>[
-        getFilterHeaderItem(DealFilter.Today),
-        getFilterHeaderItem(DealFilter.Popular),
-        getFilterHeaderItem(DealFilter.Freebies),
-        getFilterHeaderItem(DealFilter.Expiring),
-        getFilterHeaderItem(DealFilter.Upcoming),
-        getFilterHeaderItem(DealFilter.LongRunning),
-        getFilterHeaderItem(DealFilter.All)
+        getFilterHeaderItem(DealFilterType.Today),
+        getFilterHeaderItem(DealFilterType.Popular),
+        getFilterHeaderItem(DealFilterType.Freebies),
+        getFilterHeaderItem(DealFilterType.Expiring),
+        getFilterHeaderItem(DealFilterType.Upcoming),
+        getFilterHeaderItem(DealFilterType.LongRunning),
+        getFilterHeaderItem(DealFilterType.All)
       ],
     ));
     return container;
   }
 
-  Widget getFilterHeaderItem(DealFilter filter) {
+  Widget getFilterHeaderItem(DealFilterType filter) {
     var text = "All";
 
     var color = _theme.accentColor;
@@ -266,46 +265,46 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
 
     var action = () => {};
     switch (filter) {
-      case DealFilter.Today:
+      case DealFilterType.Today:
         {
           text = "Today";
-          action = () => changeFilter(DealFilter.Today);
+          action = () => changeFilter(DealFilterType.Today);
         }
         break;
-      case DealFilter.Popular:
+      case DealFilterType.Popular:
         {
           text = "Popular";
-          action = () => changeFilter(DealFilter.Popular);
+          action = () => changeFilter(DealFilterType.Popular);
         }
         break;
-      case DealFilter.Upcoming:
+      case DealFilterType.Upcoming:
         {
           text = "Upcoming";
-          action = () => changeFilter(DealFilter.Upcoming);
+          action = () => changeFilter(DealFilterType.Upcoming);
         }
         break;
-      case DealFilter.Expiring:
+      case DealFilterType.Expiring:
         {
           text = "Expiring";
-          action = () => changeFilter(DealFilter.Expiring);
+          action = () => changeFilter(DealFilterType.Expiring);
         }
         break;
-      case DealFilter.Freebies:
+      case DealFilterType.Freebies:
         {
           text = "Freebies";
-          action = () => changeFilter(DealFilter.Freebies);
+          action = () => changeFilter(DealFilterType.Freebies);
         }
         break;
-      case DealFilter.LongRunning:
+      case DealFilterType.LongRunning:
         {
           text = "Long Running";
-          action = () => changeFilter(DealFilter.LongRunning);
+          action = () => changeFilter(DealFilterType.LongRunning);
         }
         break;
       default:
         {
           text = "All";
-          action = () => changeFilter(DealFilter.All);
+          action = () => changeFilter(DealFilterType.All);
         }
         break;
     }
@@ -323,7 +322,7 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
     );
   }
 
-  changeFilter(DealFilter filter) {
+  changeFilter(DealFilterType filter) {
     setState(() {
       _filter = filter;
       _onRefresh();

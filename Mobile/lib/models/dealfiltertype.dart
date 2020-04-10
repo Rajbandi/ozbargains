@@ -1,4 +1,5 @@
-enum DealFilter{
+enum DealFilterType
+{
   All,
   Today,
   Popular,

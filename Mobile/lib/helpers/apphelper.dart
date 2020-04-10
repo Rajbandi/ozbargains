@@ -5,7 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:html/parser.dart';
+import 'package:ozbargain/models/filterrule.dart';
 import 'package:ozbargain/models/appsettings.dart';
+import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/viewmodels/thememodel.dart';
 import 'package:ozbargain/views/dealwebview.dart';
 import 'package:provider/provider.dart';
@@ -14,8 +16,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppHelper {
+
   AppHelper() {
-    refreshSettings();
+    AppDataModel().refreshSettings();
   }
   static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -29,7 +32,7 @@ class AppHelper {
     //await DealBrowser().open(url: url, options: InAppBrowserClassOptions());
 
     if (isUrlValid(url)) {
-      if (settings.openBrowser) {
+      if (AppDataModel().settings.openBrowser) {
 
       var result = await launch(url);
       if(!result)
@@ -65,21 +68,48 @@ class AppHelper {
     return dt;
   }
 
-  static Future showNotificationWithoutSound() async {
-    var androidPlatformChannelSpecifics = new AndroidNotificationDetails(
-        'your channel id', 'your channel name', 'your channel description',
-        playSound: false, importance: Importance.Max, priority: Priority.High);
-    var iOSPlatformChannelSpecifics =
-        new IOSNotificationDetails(presentSound: false);
-    var platformChannelSpecifics = new NotificationDetails(
-        androidPlatformChannelSpecifics, iOSPlatformChannelSpecifics);
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'New Post',
-      'How to Show Notification in Flutter',
-      platformChannelSpecifics,
-      payload: 'No_Sound',
-    );
+  static String getCurrentTheme(BuildContext context) {
+    return Provider.of<ThemeModel>(context, listen: false).currentThemeName;
+  }
+
+  static changeTheme(BuildContext context, String theme) async {
+    var themeStr = theme ?? "light";
+
+    Provider.of<ThemeModel>(context, listen: false).changeTheme(theme);
+    var model = AppDataModel();
+    model.settings.theme = themeStr;
+    model.updateSettings();
+  }
+
+  static Future showNotification(String title, String message, {bool sound=true}) async
+  {
+     var model = AppDataModel();
+      if(!model.settings.showNotifications)
+      {
+        return;
+      }
+      var android = AndroidNotificationDetails("1234","Messages","General messages", playSound: sound, importance: Importance.Max, priority: Priority.High);
+
+      var iOS = IOSNotificationDetails(presentSound: sound);
+      
+      var details = new NotificationDetails(android, iOS);
+      
+      await flutterLocalNotificationsPlugin.show(0, title, message, details);
+  }
+
+  static Future showNotificationMessage(Map<String, dynamic> message) async
+  {
+      var notification = message['notification'];
+      if(notification != null)
+      {
+          var title = notification['title'];
+          var body = notification['body'];
+          if(title != null && body != null)
+          {
+              print("Showing message $title $body");
+              await showNotification(title, body);
+          }
+      }
   }
 
   static void shareData(String subject, String data) {
@@ -130,52 +160,5 @@ class AppHelper {
     }
   }
 
-  static AppSettings _settings;
-
-  static AppSettings get settings {
-    loadSettings();
-    return _settings;
-  }
-
-  static updateSettings() {
-    print("******** updating settings ********");
-    preferences.setString("settings", jsonEncode(settings.toJson()));
-  }
-
-  static refreshSettings() {
-    loadSettings(refresh: true);
-  }
-
-  static loadSettings({bool refresh = false}) {
-    if (_settings == null || refresh) {
-      print("Loading settings");
-      var jsonString = preferences.getString("settings");
-      try {
-        _settings = AppSettings.fromJson(jsonDecode(jsonString));
-      } catch (e) {
-        _settings = AppSettings();
-        print(e);
-      }
-
-      print("Settings $_settings");
-    }
-  }
-
-  static String getCurrentTheme(BuildContext context) {
-    return Provider.of<ThemeModel>(context, listen: false).currentThemeName;
-  }
-
-  static changeTheme(BuildContext context, String theme) async {
-    var themeStr = theme ?? "light";
-
-    Provider.of<ThemeModel>(context, listen: false).changeTheme(theme);
-
-    AppHelper.settings.theme = themeStr;
-    updateSettings();
-  }
-
-  static changeOpenBrowser(bool openBrowser) {
-    AppHelper.settings.openBrowser = openBrowser;
-    updateSettings();
-  }
+  
 }

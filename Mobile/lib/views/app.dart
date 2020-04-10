@@ -1,12 +1,17 @@
+import 'package:device_info/device_info.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
+import 'package:ozbargain/models/filterrule.dart';
+import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/viewmodels/thememodel.dart';
-import 'package:ozbargain/views/alertrule.dart';
-import 'package:ozbargain/views/alerts.dart';
+import 'package:ozbargain/views/about.dart';
+import 'package:ozbargain/views/filterrule.dart';
+import 'package:ozbargain/views/filters.dart';
 import 'package:ozbargain/views/dealroute.dart';
+import 'package:ozbargain/views/deviceinfo.dart';
 import 'package:ozbargain/views/mydeals.dart';
 import 'package:ozbargain/views/settings.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +26,7 @@ class OzBargainApp extends StatefulWidget {
       FirebaseAnalyticsObserver(analytics: analytics);
 
   static FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
-
+static final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
 @override
   _OzBargainAppState createState() => new _OzBargainAppState();
@@ -47,14 +52,19 @@ AppHelper.flutterLocalNotificationsPlugin = flutterLocalNotificationsPlugin;
     OzBargainApp.firebaseMessaging.requestNotificationPermissions();
 
      OzBargainApp.firebaseMessaging.configure(
-     onMessage: (Map<String, dynamic> message) {
+     onMessage: (Map<String, dynamic> message) async {
+
        print('onMessage called: $message');
+       await AppHelper.showNotificationMessage(message);
      },
-     onResume: (Map<String, dynamic> message) {
+     onResume: (Map<String, dynamic> message) async {
        print('onResume called: $message');
+       await AppHelper.showNotificationMessage(message);
      },
-     onLaunch: (Map<String, dynamic> message) {
+     onLaunch: (Map<String, dynamic> message) async
+     {
        print('onLaunch called: $message');
+       await AppHelper.showNotificationMessage(message);
      },
    );
 
@@ -69,14 +79,15 @@ OzBargainApp.firebaseMessaging.getToken().then((token){
   BuildContext context;
 
   _loadApp() async {
+    var model = AppDataModel();
     await AppHelper.getSharedPreferences();
-    AppHelper.loadSettings();
+    model.loadSettings();
     // you can load here any other data or external data that your app might need
     if(this.context != null)
     {
-        if(AppHelper.settings != null)
+        if(model.settings != null)
         {
-          var theme = AppHelper.settings.theme;
+          var theme = model.settings.theme;
           AppHelper.changeTheme(context, theme);
         }
     }
@@ -97,9 +108,11 @@ return MaterialApp(
         switch(settings.name)
         {
           case '/mydeals': return new DealRoute(builder: (_)=> new MyDealsPage(title: 'My Deals'));
-          case '/alerts': return new DealRoute(builder: (_)=> new DealAlertsPage(title: 'Deal Alerts'));
+          case '/alerts': return new DealRoute(builder: (_)=> new DealFiltersPage(title: 'Deal Filters'));
           case '/settings': return new DealRoute(builder: (_)=> new SettingsPage(title: 'Settings'));
-          case '/viewalert': return new MaterialPageRoute(builder: (_)=> new AlertRuleView(settings.arguments));
+          case '/viewalert': return new MaterialPageRoute<DealFilter>(builder: (_)=> new DealFilterView(settings.arguments));
+          case '/deviceinfo': return new MaterialPageRoute(builder: (_)=> new DeviceInfoPage());
+          case '/about': return new MaterialPageRoute(builder: (_)=> new AboutPage());
           default:
             return new DealRoute(builder: (_)=> new HomePage(title: 'OZBargain Deals'));
         }
