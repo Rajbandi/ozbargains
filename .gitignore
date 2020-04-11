@@ -3,3 +3,16 @@ Mobile/pubspec.lock
 .DS_Store
 Scraper/package-lock.json
 Api/package-lock.json
+Mobile/android/app/google-services.json
+Mobile/ios/Podfile.lock
+Tests/Dart/pubspec.lock
+Mobile/ios/Runner.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+Mobile/ios/Podfile.lock
+Mobile/android/app/.settings/org.eclipse.buildship.core.prefs
+Mobile/android/app/.project
+Mobile/android/app/.classpath
+Mobile/android/.settings/org.eclipse.buildship.core.prefs
+Mobile/android/settings_aar.gradle
+Mobile/android/.project
+Mobile/pubspec.lock
+Mobile/ios/Podfile.lock

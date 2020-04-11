@@ -56,18 +56,19 @@ class _DealsFiltersPageState extends State<DealFiltersPage> {
 
   _getRuleView(DealFilter filter) {
     return InkWell(child:Container(
-      padding: EdgeInsets.symmetric(vertical:20, horizontal: 10),
-      color: Colors.grey.shade700,
+      padding: EdgeInsets.symmetric(vertical:10, horizontal: 10),
+      margin: EdgeInsets.all(5),
+      color: _theme.dividerColor,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: <Widget>[
           Opacity(
               opacity: 0.75,
               child: Text(filter.name,
-                  style: _theme.textTheme.headline6.copyWith(color:Colors.white)
+                  style: _theme.textTheme.headline6
                       )),
           InkWell(
-              child: Icon(Icons.delete), onTap: () => {_removeFilter(filter)}),
+              child: Icon(Icons.delete, color: Colors.redAccent,), onTap: () => {_removeFilter(filter)}),
         ],
       ),
     ), onTap: ()=>{

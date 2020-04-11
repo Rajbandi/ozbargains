@@ -1,12 +1,8 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:html/parser.dart';
-import 'package:ozbargain/models/filterrule.dart';
-import 'package:ozbargain/models/appsettings.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/viewmodels/thememodel.dart';
 import 'package:ozbargain/views/dealwebview.dart';
@@ -16,7 +12,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppHelper {
-
   AppHelper() {
     AppDataModel().refreshSettings();
   }
@@ -33,13 +28,10 @@ class AppHelper {
 
     if (isUrlValid(url)) {
       if (AppDataModel().settings.openBrowser) {
-
-      var result = await launch(url);
-      if(!result)
-      {
-        print(" Unabled open link");
-      }
-
+        var result = await launch(url);
+        if (!result) {
+          print(" Unabled open link");
+        }
       } else {
         var view = new DealWebView(
           title: title,
@@ -81,35 +73,33 @@ class AppHelper {
     model.updateSettings();
   }
 
-  static Future showNotification(String title, String message, {bool sound=true}) async
-  {
-     var model = AppDataModel();
-      if(!model.settings.showNotifications)
-      {
-        return;
-      }
-      var android = AndroidNotificationDetails("1234","Messages","General messages", playSound: sound, importance: Importance.Max, priority: Priority.High);
+  static Future showNotification(String title, String message,
+      {bool sound = true}) async {
+    var model = AppDataModel();
+    if (!model.settings.showNotifications) {
+      return;
+    }
+    var android = AndroidNotificationDetails(
+        "1234", "Messages", "General messages",
+        playSound: sound, importance: Importance.Max, priority: Priority.High);
 
-      var iOS = IOSNotificationDetails(presentSound: sound);
-      
-      var details = new NotificationDetails(android, iOS);
-      
-      await flutterLocalNotificationsPlugin.show(0, title, message, details);
+    var iOS = IOSNotificationDetails(presentSound: sound);
+
+    var details = new NotificationDetails(android, iOS);
+
+    await flutterLocalNotificationsPlugin.show(0, title, message, details);
   }
 
-  static Future showNotificationMessage(Map<String, dynamic> message) async
-  {
-      var notification = message['notification'];
-      if(notification != null)
-      {
-          var title = notification['title'];
-          var body = notification['body'];
-          if(title != null && body != null)
-          {
-              print("Showing message $title $body");
-              await showNotification(title, body);
-          }
+  static Future showNotificationMessage(Map<String, dynamic> message) async {
+    var notification = message['notification'];
+    if (notification != null) {
+      var title = notification['title'];
+      var body = notification['body'];
+      if (title != null && body != null) {
+        print("Showing message $title $body");
+        await showNotification(title, body);
       }
+    }
   }
 
   static void shareData(String subject, String data) {
@@ -125,13 +115,14 @@ class AppHelper {
       return "";
     }
   }
+  static bool isInternetAvailable;
 
   static GlobalKey<ScaffoldState> scaffoldKey;
   static void showSnackError(message) {
     scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(message),
+      content: Text(message, style: Theme.of(scaffoldKey.currentContext).textTheme.bodyText1.copyWith(color:Colors.white)),
       duration: Duration(seconds: 2),
-      backgroundColor: Colors.redAccent,
+      backgroundColor: Colors.red.shade800,
     ));
   }
 
@@ -160,5 +151,60 @@ class AppHelper {
     }
   }
 
-  
+  static showAlertDialog(BuildContext context, String title, Widget message) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title),
+            content: message,
+            actions: <Widget>[
+              FlatButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Container(
+                    child: Padding(
+                      padding: EdgeInsets.all(5),
+                      child: Text(
+                        "Ok",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ))
+            ],
+          );
+        });
+  }
+
+  static showAlertMessage(BuildContext context,
+      {String title, String message, Widget content, List<Widget> actions}) {
+    var actionWidgets = actions;
+    if (actionWidgets == null) {
+      actionWidgets = <Widget>[
+        FlatButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Container(
+            color: Theme.of(context).primaryColor,
+            padding: EdgeInsets.all(10),
+            child: Text(
+              "Ok",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        )
+      ];
+    }
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(title ?? ""),
+            content: content != null ? content : Text(message ?? ""),
+            actions: actionWidgets,
+          );
+        });
+  }
 }

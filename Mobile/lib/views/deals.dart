@@ -111,11 +111,22 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
     var layout = new GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTapDown: (TapDownDetails t) {
-          try {
-            FocusScope.of(context).unfocus();
-          } catch (e) {
-            print(e);
-          }
+           try {
+                var focusNode = FocusScope.of(context);
+                if(focusNode != null)
+                {
+                  var focusChild = focusNode.focusedChild;
+                  if(focusChild != null)
+                  {
+                     if(!(focusChild is EditableText))
+                     {
+                        focusNode.unfocus();
+                     }
+                  }
+                }
+              } catch (e) {
+                print(e);
+              }
         },
         child: Container(
             child: Column(children: <Widget>[
@@ -386,10 +397,20 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
 
   bool _isLoading = false;
   Future<Null> _onRefresh({bool refresh = false, String search = ""}) async {
+    
+    if(refresh)
+    {
+      if(!AppHelper.isInternetAvailable)
+      {
+        AppHelper.showSnackError("No internet connection. Please check");
+        return;
+      }
+    }
     print("Filtering with $_filter");
     setState(() {
       _isLoading = true;
     });
+    
     var list = await AppDataModel()
         .getFilteredDeals(_filter, refresh: refresh, search: search);
     setState(() {

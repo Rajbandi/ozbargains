@@ -2,8 +2,8 @@
 enum PageType
 {
    Home,
-  
-   MyDeals,
    Alerts,
+   MyDeals,
+  
     Settings,
 }

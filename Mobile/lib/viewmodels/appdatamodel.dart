@@ -132,6 +132,7 @@ class AppDataModel {
   List<FilterRule> rules = new List<FilterRule>();
 
   Future<List<Deal>> getDeals(DealsQuery q) async {
+    
     if (this.deals != null)
       this.deals.clear();
     else

@@ -31,14 +31,15 @@ class _BottomMenuViewState extends State<BottomMenuView> {
           icon: Icon(Icons.home),
           title: Text('Deals'),
         ),
+         BottomNavigationBarItem(
+          icon: Icon(Icons.notifications),
+          title: Text('Fliters'),
+        ),
           BottomNavigationBarItem(
           icon: Icon(Icons.list),
           title: Text('My Deals'),
         ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.notifications),
-          title: Text('Fliters'),
-        ),
+       
         BottomNavigationBarItem(
           icon: Icon(Icons.settings),
           title: Text('Settings'),
@@ -49,10 +50,10 @@ class _BottomMenuViewState extends State<BottomMenuView> {
       onTap: (value) {
     
         switch (value) {
-          case 1:
+          case 2:
             Navigator.pushReplacementNamed(context, '/mydeals');
             break;
-          case 2:
+          case 1:
                 Navigator.pushReplacementNamed(context, '/alerts');
             break;
           case 3:
