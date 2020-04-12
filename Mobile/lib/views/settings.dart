@@ -4,10 +4,15 @@ import 'package:ozbargain/models/pagetypes.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/views/bottommenu.dart';
 import 'package:ozbargain/views/customsettings.dart';
+import 'package:package_info/package_info.dart';
 import 'package:settings_ui/settings_ui.dart';
 
+import 'app.dart';
+
 class SettingsPage extends StatefulWidget {
-  SettingsPage({Key key, this.title}) : super(key: key);
+  SettingsPage({Key key, this.title}) : super(key: key){
+    OzBargainApp.logCurrentPage("Settings");
+  }
 
   final String title;
   @override
@@ -22,7 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-
+    _loadPackageInfo();
     var currentTheme = AppHelper.getCurrentTheme(context);
 
     darkTheme = currentTheme == "Dark";
@@ -87,9 +92,9 @@ class _SettingsPageState extends State<SettingsPage> {
               title: 'About',
               leading: Icon(Icons.description),
               onTap: () {
-                //Navigator.pushNamed(context, "/about");
-                AppHelper.showAlertMessage(context,
-                    content: _getAbout());
+                Navigator.pushNamed(context, "/about");
+                // AppHelper.showAlertMessage(context,
+                //     content: _getAbout());
               },
             ),
             SettingsTile(
@@ -112,13 +117,28 @@ class _SettingsPageState extends State<SettingsPage> {
     ));
   }
 
+  
   Widget _getAbout() {
     var url = "http://www.omkaars.dev";
+
+    String packageName="OzBargain", appName="OzBargain1", version="1.01", buildNumber="0";
+    
+  
+    if(_packageInfo != null)
+    {
+        packageName = _packageInfo.packageName;
+        appName = _packageInfo.appName;
+        version = _packageInfo.version;
+        buildNumber = _packageInfo.buildNumber;
+    }
+    var appDetails = "$appName ($version) $packageName";
+
     return Container(
         height: 100,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
+            Text(appDetails, style: Theme.of(context).textTheme.headline6),
             Text("Omkaars", style: Theme.of(context).textTheme.headline6),
             InkWell(
                 child: Text(url,
@@ -129,5 +149,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 onTap: () => {AppHelper.openUrl(context, "Omkaars", url)})
           ],
         ));
+  }
+
+  PackageInfo _packageInfo;
+  void _loadPackageInfo() async
+  { 
+      _packageInfo = await PackageInfo.fromPlatform();
   }
 }

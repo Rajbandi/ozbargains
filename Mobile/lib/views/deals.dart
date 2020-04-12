@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
+import 'package:ozbargain/models/analyticsevent.dart';
 import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/models/dealfiltertype.dart';
 import 'package:ozbargain/models/pagetypes.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
+import 'package:ozbargain/views/analyticspage.dart';
+import 'package:ozbargain/views/app.dart';
 import 'package:ozbargain/views/bottommenu.dart';
 import 'package:ozbargain/views/deal.dart';
 import 'package:ozbargain/views/dealcommon.dart';
 
-class DealsView extends StatefulWidget {
-  DealsView({Key key, this.title}) : super(key: key);
+class DealsView extends StatefulWidget  {
+
+  
+  DealsView({Key key, this.title}) : super(key: key)
+  {
+    OzBargainApp.logCurrentPage("Deals");
+  }
 
   final String title;
 
@@ -107,26 +115,24 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
         });
       },
     );
-    _currentTheme = AppHelper.getCurrentTheme(context);
     var layout = new GestureDetector(
         behavior: HitTestBehavior.translucent,
         onTapDown: (TapDownDetails t) {
-           try {
-                var focusNode = FocusScope.of(context);
-                if(focusNode != null)
-                {
-                  var focusChild = focusNode.focusedChild;
-                  if(focusChild != null)
-                  {
-                     if(!(focusChild is EditableText))
-                     {
-                        focusNode.unfocus();
-                     }
-                  }
+          try {
+            var focusNode = FocusScope.of(context);
+            if (focusNode != null) {
+              var focusChild = focusNode.focusedChild;
+              if (focusChild != null) {
+                if (!(focusChild is EditableText)) {
+                  focusNode.unfocus();
                 }
-              } catch (e) {
-                print(e);
               }
+            }
+          } catch (e) {
+            print(e);
+            OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'deals','method':'GestureDetector'});
+
+          }
         },
         child: Container(
             child: Column(children: <Widget>[
@@ -153,25 +159,7 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
                       ),
                       InkWell(
                           child: Icon(Icons.filter_list),
-                          onTap: () => {
-                                _showSearchRow()
-                              }),
-                      // Container(
-                      //     child: DropdownButton<String>(
-                      //   hint: Text("Theme"),
-                      //   value: _currentTheme,
-                      //   items: <String>["Light", "Dark"].map((String value) {
-                      //     return new DropdownMenuItem<String>(
-                      //       value: value,
-                      //       child: new Text(value),
-                      //     );
-                      //   }).toList(),
-                      //   onChanged: (item) {
-                      //     _currentTheme = item;
-
-                      //     AppHelper.changeTheme(context, item);
-                      //   },
-                      // ))
+                          onTap: () => {_showSearchRow()}),
                     ],
                   ),
                 )
@@ -182,7 +170,6 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
             bottomNavigationBar: BottomMenuView(pageType: PageType.Home)));
   }
 
-  String _currentTheme = "Light";
   bool _floatButtonVisible;
   _getFloatButton() {
     var _floatButton = FloatingActionButton(
@@ -336,7 +323,13 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
   changeFilter(DealFilterType filter) {
     setState(() {
       _filter = filter;
-      _onRefresh();
+
+      var search = "";
+      if(_searchVisible && _searchController.text.length>0)
+      {
+        search = _searchController.text;
+      }
+      _onRefresh(search: search);
     });
   }
 
@@ -397,12 +390,11 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
 
   bool _isLoading = false;
   Future<Null> _onRefresh({bool refresh = false, String search = ""}) async {
-    
-    if(refresh)
-    {
-      if(!AppHelper.isInternetAvailable)
-      {
-        AppHelper.showSnackError("No internet connection. Please check");
+    if (refresh) {
+      var status = await AppHelper.getInternetStatus();
+      if (!status) {
+        AppHelper.showSnackError("No internet connection. Please check.");
+
         return;
       }
     }
@@ -410,7 +402,7 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
     setState(() {
       _isLoading = true;
     });
-    
+
     var list = await AppDataModel()
         .getFilteredDeals(_filter, refresh: refresh, search: search);
     setState(() {

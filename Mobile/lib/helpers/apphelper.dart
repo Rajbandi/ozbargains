@@ -1,11 +1,15 @@
+import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 import 'package:html/parser.dart';
+import 'package:ozbargain/models/analyticsevent.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/viewmodels/thememodel.dart';
+import 'package:ozbargain/views/app.dart';
 import 'package:ozbargain/views/dealwebview.dart';
+import 'package:package_info/package_info.dart';
 import 'package:provider/provider.dart';
 import 'package:share/share.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 class AppHelper {
   AppHelper() {
     AppDataModel().refreshSettings();
+   
   }
   static FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
@@ -25,23 +30,28 @@ class AppHelper {
   static openUrl(context, title, url) async {
     //    print("*** Url $url");
     //await DealBrowser().open(url: url, options: InAppBrowserClassOptions());
-
-    if (isUrlValid(url)) {
-      if (AppDataModel().settings.openBrowser) {
-        var result = await launch(url);
-        if (!result) {
-          print(" Unabled open link");
+    try {
+      if (isUrlValid(url)) {
+        if (AppDataModel().settings.openBrowser) {
+          var result = await launch(url);
+          if (!result) {
+            print(" Unabled open link");
+          }
+        } else {
+          var view = new DealWebView(
+            title: title,
+            url: url,
+          );
+          Navigator.push(context,
+              MaterialPageRoute(builder: (BuildContext context) => view));
         }
       } else {
-        var view = new DealWebView(
-          title: title,
-          url: url,
-        );
-        Navigator.push(context,
-            MaterialPageRoute(builder: (BuildContext context) => view));
+        showSnackError("Invalid Url : $url");
       }
-    } else {
-      showSnackError("Invalid Url : $url");
+    } catch (e) {
+      print(e);
+       OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'AppHelper','method':'openUrl'});
+
     }
   }
 
@@ -115,12 +125,17 @@ class AppHelper {
       return "";
     }
   }
+
   static bool isInternetAvailable;
 
   static GlobalKey<ScaffoldState> scaffoldKey;
   static void showSnackError(message) {
     scaffoldKey.currentState.showSnackBar(SnackBar(
-      content: Text(message, style: Theme.of(scaffoldKey.currentContext).textTheme.bodyText1.copyWith(color:Colors.white)),
+      content: Text(message,
+          style: Theme.of(scaffoldKey.currentContext)
+              .textTheme
+              .bodyText1
+              .copyWith(color: Colors.white)),
       duration: Duration(seconds: 2),
       backgroundColor: Colors.red.shade800,
     ));
@@ -207,4 +222,25 @@ class AppHelper {
           );
         });
   }
+
+  static Future<bool> getInternetStatus() async
+  {
+      var isAvailable = false;
+      var connectivity = await Connectivity().checkConnectivity();
+      if(connectivity != null)
+      {
+        if(connectivity == ConnectivityResult.mobile)
+        {
+          isAvailable = true;
+        }
+        else
+        if(connectivity == ConnectivityResult.wifi)
+        {
+          isAvailable = true;
+        }
+      }
+
+      return isAvailable;
+  }
+
 }

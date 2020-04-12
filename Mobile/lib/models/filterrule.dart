@@ -82,7 +82,7 @@ class FilterRule {
         if(condition == conditionContains)
         {
           //print("Parsing contains $prefixValue $suffix");
-          isMatch = prefixValue.contains(new RegExp(suffix));
+          isMatch = prefixValue.contains(new RegExp(suffix,caseSensitive: false));
           //print("ruleMatch $isMatch");
         }
         else

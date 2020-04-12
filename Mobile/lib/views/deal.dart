@@ -4,9 +4,12 @@ import 'package:ozbargain/views/dealcommon.dart';
 
 import '../helpers/apphelper.dart';
 import '../models/deal.dart';
+import 'app.dart';
 
 class DealView extends StatefulWidget {
-  DealView({Key key, this.title, this.deal}) : super(key: key);
+  DealView({Key key, this.title, this.deal}) : super(key: key){
+    OzBargainApp.logCurrentPage("Deal");
+  }
 
   final String title;
   final Deal deal;

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
+import 'package:ozbargain/models/analyticsevent.dart';
 import 'package:ozbargain/models/deal.dart';
+
+import 'app.dart';
 
 class DealCommon {
   BuildContext context;
@@ -177,7 +180,10 @@ class DealCommon {
           width: width,
           height: height,
         );
-    } catch (e) {}
+    } catch (e) {
+    OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'DealCommon','method':'getNetworkImage'});
+
+    }
 
     if (image == null) {
       image = Text("No Image");

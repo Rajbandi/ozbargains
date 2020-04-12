@@ -6,7 +6,9 @@ import 'dart:io';
 import 'package:ozbargain/views/app.dart';
 
 class DeviceInfoPage extends StatefulWidget {
-  DeviceInfoPage({Key key}) : super(key: key);
+  DeviceInfoPage({Key key}) : super(key: key){
+    OzBargainApp.logCurrentPage("DeviceInfo");
+  }
 
   @override
   _DeviceInfoPageState createState() => _DeviceInfoPageState();
@@ -38,33 +40,33 @@ Future initPlatformState() async {
 
  Map<String, dynamic> _readAndroidInfo(AndroidDeviceInfo build) {
     return <String, dynamic>{
-      'version.securityPatch': build.version.securityPatch,
-      'version.sdkInt': build.version.sdkInt,
-      'version.release': build.version.release,
-      'version.previewSdkInt': build.version.previewSdkInt,
-      'version.incremental': build.version.incremental,
-      'version.codename': build.version.codename,
-      'version.baseOS': build.version.baseOS,
-      'board': build.board,
-      'bootloader': build.bootloader,
-      'brand': build.brand,
-      'device': build.device,
-      'display': build.display,
-      'fingerprint': build.fingerprint,
-      'hardware': build.hardware,
-      'host': build.host,
-      'id': build.id,
-      'manufacturer': build.manufacturer,
-      'model': build.model,
-      'product': build.product,
-      'supported32BitAbis': build.supported32BitAbis,
-      'supported64BitAbis': build.supported64BitAbis,
-      'supportedAbis': build.supportedAbis,
-      'tags': build.tags,
-      'type': build.type,
-      'isPhysicalDevice': build.isPhysicalDevice,
-      'androidId': build.androidId,
-      'systemFeatures': build.systemFeatures,
+      'Security Patch': build.version.securityPatch,
+      'Sdk Integer': build.version.sdkInt,
+      'Release': build.version.release,
+      'Preview Sdk Int': build.version.previewSdkInt,
+      'Incremental': build.version.incremental,
+      'Codename': build.version.codename,
+      'Base OS': build.version.baseOS,
+      'Board': build.board,
+      'Bootloader': build.bootloader,
+      'Brand': build.brand,
+      'Device': build.device,
+      'Display': build.display,
+      'Fingerprint': build.fingerprint,
+      'Hardware': build.hardware,
+      'Host': build.host,
+      'Id': build.id,
+      'Manufacturer': build.manufacturer,
+      'Model': build.model,
+      'Product': build.product,
+      '32Bit supported': build.supported32BitAbis,
+      '64Bit supported': build.supported64BitAbis,
+      'Abis supported': build.supportedAbis,
+      'Tags': build.tags,
+      'Type': build.type,
+      'Physical device': build.isPhysicalDevice,
+      'Android Id': build.androidId,
+      'System Features': build.systemFeatures,
     };
   }
 
@@ -72,18 +74,18 @@ Future initPlatformState() async {
   
   Map<String, dynamic> _readIosInfo(IosDeviceInfo data) {
     return <String, dynamic>{
-      'name': data.name,
-      'systemName': data.systemName,
-      'systemVersion': data.systemVersion,
-      'model': data.model,
-      'localizedModel': data.localizedModel,
-      'identifierForVendor': data.identifierForVendor,
-      'isPhysicalDevice': data.isPhysicalDevice,
-      'utsname.sysname': data.utsname.sysname,
-      'utsname.nodename': data.utsname.nodename,
-      'utsname.release': data.utsname.release,
-      'utsname.version': data.utsname.version,
-      'utsname.machine': data.utsname.machine,
+      'Name': data.name,
+      'System Name': data.systemName,
+      'System Version': data.systemVersion,
+      'Model': data.model,
+      'Localized Model': data.localizedModel,
+      'Vendor identifier': data.identifierForVendor,
+      'Physical device': data.isPhysicalDevice,
+      'Sysname': data.utsname.sysname,
+      'Nodename': data.utsname.nodename,
+      'Release': data.utsname.release,
+      'Version': data.utsname.version,
+      'Machine': data.utsname.machine,
     };
 
 
@@ -98,46 +100,64 @@ Future initPlatformState() async {
   @override
   Widget build(BuildContext context){
 
+    List<TableRow> rows = new List<TableRow>();
+    for(var key in _deviceData.keys)
+    {
+        var value = _deviceData[key];
+
+        rows.add(getRow(key, "$value"));
+    }
       
     return SafeArea(child: Scaffold(
       appBar: AppBar(title: Text("Device Info"),
       ),
-      body: ListView.separated(
-        padding: EdgeInsets.only(right:5),
-        itemBuilder: (context, index){
-            var key = _deviceData.keys.elementAt(index);
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Expanded(
-                
-                child:Container(
-                  padding: const EdgeInsets.all(10.0),
-                  child: Text(
-                    key,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                )),
-                Expanded(
-                    child: Container(
-                  padding: const EdgeInsets.fromLTRB(0.0, 10.0, 0.0, 10.0),
-                  child: Text(
-                    '${_deviceData[key]}',
-                  ),
-                )),
-              ],
-            );
+      body: ListView(children: <Widget>[
 
-        }, 
-        separatorBuilder: (context, index){
-          return Divider(height: 1,);
-        }, 
-        itemCount: _deviceData != null?_deviceData.length:0)
-      
-      
+ Table(
+        
+        columnWidths: {
+          0: FlexColumnWidth(1),
+          1: FlexColumnWidth(2)
+        },
+        children: rows,)
+
+      ],)  
+
     ),);
   }
+   TableRow getRow(String title, String value)
+  {
+    var theme = Theme.of(context);
+    var textTheme = Theme.of(context).textTheme;
+    var color = theme.dividerColor;
+
+    var borderSide = BorderSide(color:color,width: 0.2);
+   
+     var valueWidget =  Text(value, style: textTheme.subtitle1);
+    return TableRow(
+        
+          children: [
+          TableCell(
+                
+            child: Container(
+              padding: EdgeInsets.all(10),
+              child:  Text(title, style: textTheme.bodyText1.copyWith(color:Colors.grey.shade500)),
+            decoration: BoxDecoration(
+              border: Border.fromBorderSide(borderSide)
+            ),
+            ),
+            
+            ),
+          TableCell(child: Container(
+              padding: EdgeInsets.all(10),
+              child:  valueWidget,
+            decoration: BoxDecoration(
+              border: Border.fromBorderSide(borderSide)
+            ),
+            ),
+            )
+        ]);  
+        
+        }
 }
 

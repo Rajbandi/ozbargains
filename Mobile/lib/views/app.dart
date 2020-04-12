@@ -34,6 +34,18 @@ class OzBargainApp extends StatefulWidget {
 
   @override
   _OzBargainAppState createState() => new _OzBargainAppState();
+
+
+  static void logCurrentPage(String pageName)
+  {
+    analytics.setCurrentScreen(screenName: pageName);
+  }
+
+  static void logEvent(String name, Map<String, dynamic> parameters)
+  {
+    analytics.logEvent(name: name, parameters: parameters);
+  }
+
 }
 
 class _OzBargainAppState extends State<OzBargainApp> {
@@ -43,6 +55,7 @@ class _OzBargainAppState extends State<OzBargainApp> {
   bool _initialized = false;
   bool _isInternetAvailable = false;
   final Connectivity _connectivity = Connectivity();
+  
   StreamSubscription<ConnectivityResult> _connectivitySubscription;
 
   @override
@@ -228,12 +241,6 @@ class _OzBargainAppState extends State<OzBargainApp> {
                 builder: (_) => new HomePage(title: 'OZBargain Deals'));
         }
       },
-      // routes: {
-
-      //   '/': (context)=> HomePage(title: 'OZBargain Deals'),
-      //   '/alerts': (context)=> DealAlertsPage(title: 'Deal alerts'),
-      //   '/settings': (context)=> SettingsPage()
-      // },
     );
   }
 

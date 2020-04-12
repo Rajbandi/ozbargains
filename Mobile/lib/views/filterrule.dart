@@ -2,11 +2,16 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
+import 'package:ozbargain/models/analyticsevent.dart';
 import 'package:ozbargain/models/filterrule.dart';
+
+import 'app.dart';
 
 class DealFilterView extends StatefulWidget {
   final DealFilter filter;
-  DealFilterView(this.filter, {Key key}) : super(key: key);
+  DealFilterView(this.filter, {Key key}) : super(key: key){
+    OzBargainApp.logCurrentPage("DealFilter");
+  }
 
   @override
   _DealFilterViewState createState() => _DealFilterViewState();
@@ -61,6 +66,7 @@ class _DealFilterViewState extends State<DealFilterView> {
                 }
               } catch (e) {
                 print(e);
+                 OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e,'class':'filterule','method':'GestureDetector'});
               }
             },
             child: SafeArea(

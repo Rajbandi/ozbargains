@@ -4,8 +4,12 @@ import 'package:ozbargain/models/pagetypes.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/views/bottommenu.dart';
 
+import 'app.dart';
+
 class DealFiltersPage extends StatefulWidget {
-  DealFiltersPage({Key key, this.title}) : super(key: key);
+  DealFiltersPage({Key key, this.title}) : super(key: key){
+    OzBargainApp.logCurrentPage("Filters");
+  }
   final String title;
   @override
   _DealsFiltersPageState createState() => _DealsFiltersPageState();

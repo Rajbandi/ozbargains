@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 
+import 'app.dart';
+
 
 class DealWebView extends StatefulWidget {
   final String title;
   final String url;
 
-  DealWebView({Key key, this.title, this.url}) : super(key: key);
+  DealWebView({Key key, this.title, this.url}) : super(key: key){
+    OzBargainApp.logCurrentPage("DealWebView");
+  }
 
   @override
   _DealWebViewState createState() => _DealWebViewState();

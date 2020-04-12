@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:ozbargain/models/analyticsevent.dart';
+import 'package:ozbargain/views/app.dart';
 
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
@@ -50,6 +52,8 @@ class DealSocket extends Object
           deals = jsonDecode(data);
         } catch (e) {
           log("Error while decoding json $e");
+          OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'DealSocket','method':'socket_on'});
+
         }
         log("Sending data to stream ${deals.length}");
         _controller.sink.add(deals);
@@ -62,6 +66,8 @@ class DealSocket extends Object
       });
     } catch (e) {
       log('An error occurred while opening socket connection $e');
+       OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'DealSocket','method':'open'});
+
     }
   }
 
@@ -87,6 +93,8 @@ class DealSocket extends Object
       }
     } catch (e) {
       log('An error occurred while closing socket connection $e');
+             OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'DealSocket','method':'close'});
+
     }
   }
    

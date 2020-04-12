@@ -3,10 +3,12 @@ import 'dart:convert';
 import "package:ozbargain/api/dealapi.dart";
 import 'package:ozbargain/api/dealsocket.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
+import 'package:ozbargain/models/analyticsevent.dart';
 import 'package:ozbargain/models/filterrule.dart';
 import 'package:ozbargain/models/appsettings.dart';
 import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/models/dealfiltertype.dart';
+import 'package:ozbargain/views/app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppDataModel {
@@ -65,9 +67,10 @@ class AppDataModel {
       } catch (e) {
         _settings = AppSettings();
         print(e);
+        OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'AppDataModel','method':'loadSettings'});
+
       }
 
-      print("Settings $_settings");
     }
   }
 
@@ -102,6 +105,8 @@ class AppDataModel {
      
     } catch (e) {
       print(e);
+     OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'AppDataModel','method':'refreshMyDeals'});
+
     }
   }
 
@@ -132,7 +137,7 @@ class AppDataModel {
   List<FilterRule> rules = new List<FilterRule>();
 
   Future<List<Deal>> getDeals(DealsQuery q) async {
-    
+
     if (this.deals != null)
       this.deals.clear();
     else
@@ -273,9 +278,10 @@ class AppDataModel {
     }
 
     if (search != null && search.length > 0) {
+      var regExp = new RegExp(search,caseSensitive: false);
       filteredDeals = filteredDeals
           .where((deal) =>
-              deal.title.contains(search) || deal.description.contains(search))
+              deal.title.contains(regExp) || deal.description.contains(regExp))
           .toList();
     }
 

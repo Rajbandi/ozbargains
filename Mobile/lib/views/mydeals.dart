@@ -4,11 +4,15 @@ import 'package:ozbargain/models/pagetypes.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
 import 'package:ozbargain/views/dealcommon.dart';
 
+import 'app.dart';
 import 'bottommenu.dart';
 
 class MyDealsPage extends StatefulWidget {
   final String title;
-  MyDealsPage({Key key, this.title}) : super(key: key);
+  MyDealsPage({Key key, this.title}) : super(key: key)
+  {
+    OzBargainApp.logCurrentPage("MyDeals");
+  }
 
   @override
   _MyDealsPageState createState() => _MyDealsPageState();
