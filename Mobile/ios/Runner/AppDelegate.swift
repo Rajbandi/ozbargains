@@ -8,9 +8,10 @@ import Firebase
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    FirebaseApp.configure()
     var flutter_native_splash = 1
     UIApplication.shared.isStatusBarHidden = false
-    FirebaseApp.configure()
+    
     GeneratedPluginRegistrant.register(with: self)
  
     if #available(iOS 10.0, *) {

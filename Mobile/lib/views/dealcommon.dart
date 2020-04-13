@@ -312,7 +312,7 @@ class DealCommon {
   Widget getVote(v, IconData icon, Color c) {
     return Container(
         alignment: Alignment.center,
-        padding: EdgeInsets.all(3),
+        padding: EdgeInsets.all(1),
         margin: EdgeInsets.only(bottom: 1),
         child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,

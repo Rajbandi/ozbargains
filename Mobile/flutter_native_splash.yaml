@@ -1,2 +1,3 @@
 flutter_native_splash:
-    color: "CD6700"
+    color: "#ffffff"
+    image: assets/images/appicon-2.png

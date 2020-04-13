@@ -11,9 +11,9 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>ozbargain</string>
+	<string>OZBargain</string>
 	<key>CFBundleDisplayName</key>
-	<string>ozbargain</string>
+	<string>OZBargain</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

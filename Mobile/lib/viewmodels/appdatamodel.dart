@@ -43,6 +43,7 @@ class AppDataModel {
   AppSettings _settings;
 
   AppSettings get settings {
+    
     loadSettings();
     return _settings;
   }
@@ -66,7 +67,9 @@ class AppDataModel {
         _settings = AppSettings.fromJson(jsonDecode(jsonString));
       } catch (e) {
         _settings = AppSettings();
-        print(e);
+        
+        print("An Error occurred while loading settings $e");
+
         OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'AppDataModel','method':'loadSettings'});
 
       }

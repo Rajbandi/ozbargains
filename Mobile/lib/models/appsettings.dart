@@ -8,13 +8,18 @@ class AppSettings {
 
   List<DealFilter> alertFilters = new List<DealFilter>();
 
-  AppSettings({this.title, this.theme});
+  AppSettings({this.title, this.theme})
+  {
+    openBrowser = true;
+    showNotifications = true;
+  }
 
   AppSettings.fromJson(Map<String, dynamic> json) {
     title = json['title'] ?? "";
     theme = json['theme'] ?? "light";
     openBrowser = json['openBrowser'] ?? true;
     showNotifications = json['showNotifications'] ?? true;
+
     var filters = json['alertFilters'];
     if (filters != null) {
       alertFilters.clear();
@@ -22,6 +27,7 @@ class AppSettings {
         alertFilters.add(DealFilter.fromJson(filter));
       }
     }
+    if(alertFilters != null)
     print("AlertFilters ${alertFilters.length}");
   }
 

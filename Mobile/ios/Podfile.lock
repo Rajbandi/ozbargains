@@ -9,17 +9,17 @@ PODS:
   - device_info (0.0.1):
     - Flutter
   - Fabric (1.10.2)
-  - Firebase/Analytics (6.21.0):
+  - Firebase/Analytics (6.22.0):
     - Firebase/Core
-  - Firebase/Core (6.21.0):
+  - Firebase/Core (6.22.0):
     - Firebase/CoreOnly
-    - FirebaseAnalytics (= 6.4.0)
-  - Firebase/CoreOnly (6.21.0):
-    - FirebaseCore (= 6.6.5)
-  - Firebase/Crashlytics (6.21.0):
+    - FirebaseAnalytics (= 6.4.1)
+  - Firebase/CoreOnly (6.22.0):
+    - FirebaseCore (= 6.6.6)
+  - Firebase/Crashlytics (6.22.0):
     - Firebase/CoreOnly
-    - FirebaseCrashlytics (~> 4.0.0-beta.6)
-  - Firebase/Messaging (6.21.0):
+    - FirebaseCrashlytics (~> 4.0.0-beta.7)
+  - Firebase/Messaging (6.22.0):
     - Firebase/CoreOnly
     - FirebaseMessaging (~> 4.3.0)
   - firebase_analytics (0.0.1):
@@ -40,41 +40,41 @@ PODS:
     - Firebase/Core
     - Firebase/Messaging
     - Flutter
-  - FirebaseAnalytics (6.4.0):
+  - FirebaseAnalytics (6.4.1):
     - FirebaseCore (~> 6.6)
     - FirebaseInstallations (~> 1.1)
-    - GoogleAppMeasurement (= 6.4.0)
+    - GoogleAppMeasurement (= 6.4.1)
     - GoogleUtilities/AppDelegateSwizzler (~> 6.0)
     - GoogleUtilities/MethodSwizzler (~> 6.0)
     - GoogleUtilities/Network (~> 6.0)
     - "GoogleUtilities/NSData+zlib (~> 6.0)"
     - nanopb (= 0.3.9011)
   - FirebaseAnalyticsInterop (1.5.0)
-  - FirebaseCore (6.6.5):
+  - FirebaseCore (6.6.6):
     - FirebaseCoreDiagnostics (~> 1.2)
     - FirebaseCoreDiagnosticsInterop (~> 1.2)
     - GoogleUtilities/Environment (~> 6.5)
     - GoogleUtilities/Logger (~> 6.5)
-  - FirebaseCoreDiagnostics (1.2.2):
+  - FirebaseCoreDiagnostics (1.2.3):
     - FirebaseCoreDiagnosticsInterop (~> 1.2)
     - GoogleDataTransportCCTSupport (~> 2.0)
     - GoogleUtilities/Environment (~> 6.5)
     - GoogleUtilities/Logger (~> 6.5)
     - nanopb (~> 0.3.901)
   - FirebaseCoreDiagnosticsInterop (1.2.0)
-  - FirebaseCrashlytics (4.0.0-beta.6):
+  - FirebaseCrashlytics (4.0.0-beta.7):
     - FirebaseAnalyticsInterop (~> 1.2)
     - FirebaseCore (~> 6.6)
     - FirebaseInstallations (~> 1.1)
-    - GoogleDataTransport (~> 5.1)
-    - GoogleDataTransportCCTSupport (>= 2.0.1, ~> 2.0)
+    - GoogleDataTransport (>= 5.1.1, ~> 5.1)
+    - GoogleDataTransportCCTSupport (>= 2.0.2, ~> 2.0)
     - nanopb (~> 0.3.901)
     - PromisesObjC (~> 1.2)
   - FirebaseInstallations (1.1.1):
     - FirebaseCore (~> 6.6)
     - GoogleUtilities/UserDefaults (~> 6.5)
     - PromisesObjC (~> 1.2)
-  - FirebaseInstanceID (4.3.2):
+  - FirebaseInstanceID (4.3.3):
     - FirebaseCore (~> 6.6)
     - FirebaseInstallations (~> 1.0)
     - GoogleUtilities/Environment (~> 6.5)
@@ -93,14 +93,14 @@ PODS:
     - Flutter
   - flutter_webview_plugin (0.0.1):
     - Flutter
-  - GoogleAppMeasurement (6.4.0):
+  - GoogleAppMeasurement (6.4.1):
     - GoogleUtilities/AppDelegateSwizzler (~> 6.0)
     - GoogleUtilities/MethodSwizzler (~> 6.0)
     - GoogleUtilities/Network (~> 6.0)
     - "GoogleUtilities/NSData+zlib (~> 6.0)"
     - nanopb (= 0.3.9011)
-  - GoogleDataTransport (5.1.0)
-  - GoogleDataTransportCCTSupport (2.0.1):
+  - GoogleDataTransport (5.1.1)
+  - GoogleDataTransportCCTSupport (2.0.2):
     - GoogleDataTransport (~> 5.1)
     - nanopb (~> 0.3.901)
   - GoogleUtilities/AppDelegateSwizzler (6.5.2):
@@ -238,27 +238,27 @@ SPEC CHECKSUMS:
   Crashlytics: 540b7e5f5da5a042647227a5e3ac51d85eed06df
   device_info: cbf09d2ec12aa7110e0b09fabe54b5bd6c8efe74
   Fabric: 706c8b8098fff96c33c0db69cbf81f9c551d0d74
-  Firebase: f378c80340dd41c0ad0914af740c021eb282a04b
+  Firebase: 32f9520684e87c7af3f0704f7f88042626d6b536
   firebase_analytics: dacdcfc524d722fff13dcff942f0dfa47e6be567
   firebase_core: 0d8be0e0d14c4902953aeb5ac5d7316d1fe4b978
   firebase_core_web: d501d8b946b60c8af265428ce483b0fff5ad52d1
   firebase_crashlytics: bd8c58df07f107cb7e1a20cb190b9a468e0a69fd
   firebase_messaging: cffb57ce40958c6204f03fb0c81713e4cd1e240c
-  FirebaseAnalytics: a1a0b3327ceb5cd5b4bacffdb293f6c909aa087d
+  FirebaseAnalytics: 83f822fd0d33a46f49f89b8c3ab16ab4d89df08a
   FirebaseAnalyticsInterop: 3f86269c38ae41f47afeb43ebf32a001f58fcdae
-  FirebaseCore: 9f495d3afacb7b558711e6218ebb14b1c51b5802
-  FirebaseCoreDiagnostics: e9b4cd8ba60dee0f2d13347332e4b7898cca5b61
+  FirebaseCore: 9aca0f1fffb405176ba15311a5621fcde4106fcf
+  FirebaseCoreDiagnostics: 13a6564cd6d5375066bbc8940cc1753af24497f3
   FirebaseCoreDiagnosticsInterop: 296e2c5f5314500a850ad0b83e9e7c10b011a850
-  FirebaseCrashlytics: b9e729da8b80d9c45f234f791a73b5fe647d4c31
+  FirebaseCrashlytics: ad2e8527a7efd9a7e708d5abe57318ced2e1dbd1
   FirebaseInstallations: acb3216eb9784d3b1d2d2d635ff74fa892cc0c44
-  FirebaseInstanceID: 7ee0d6777013bb952f377b41965bf132b6a075be
+  FirebaseInstanceID: 4b87a9a75ef628a53bb5de46e4d4cecfcce88c02
   FirebaseMessaging: 4ec33842d36b3319e062e51fb8b35a74f726950d
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
   flutter_local_notifications: 9e4738ce2471c5af910d961a6b7eadcf57c50186
   flutter_webview_plugin: ed9e8a6a96baf0c867e90e1bce2673913eeac694
-  GoogleAppMeasurement: 6e68a94d0eaeb1d73ef6b0ed4f7334e29d63ae29
-  GoogleDataTransport: b29a21d813e906014ca16c00897827e40e4a24ab
-  GoogleDataTransportCCTSupport: 6f15a89b0ca35d6fa523e1f752ef818588885988
+  GoogleAppMeasurement: e49be3954045b17d046f271b9cc1ec052bad9702
+  GoogleDataTransport: 6ffa4dd0b6d547f8d27b91bd92fa9e197a3f5f1f
+  GoogleDataTransportCCTSupport: 12f02e5c8f09c055615de90bcd5ba2c375546051
   GoogleUtilities: ad0f3b691c67909d03a3327cc205222ab8f42e0e
   nanopb: 18003b5e52dab79db540fe93fe9579f399bd1ccd
   package_info: 48b108e75b8802c2d5e126f208ef540561c98aef

@@ -41,7 +41,7 @@ class _DealsFiltersPageState extends State<DealFiltersPage> {
         body: _filters.length == 0
             ? Align(
                 alignment: Alignment.center,
-                child: Text("No alert filters found. Press '+' to add new one."))
+                child: Text("No deal filters found. Press '+' to add new one."))
             : ListView.separated(
                 itemCount: _filters.length,
                 separatorBuilder: (context, index) {

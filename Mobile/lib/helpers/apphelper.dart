@@ -31,10 +31,13 @@ class AppHelper {
     //    print("*** Url $url");
     //await DealBrowser().open(url: url, options: InAppBrowserClassOptions());
     try {
+
+    
       if (isUrlValid(url)) {
         if (AppDataModel().settings.openBrowser) {
           var result = await launch(url);
-          if (!result) {
+         
+          if (result !=null && !result) {
             print(" Unabled open link");
           }
         } else {
@@ -42,6 +45,7 @@ class AppHelper {
             title: title,
             url: url,
           );
+           
           Navigator.push(context,
               MaterialPageRoute(builder: (BuildContext context) => view));
         }
@@ -49,13 +53,14 @@ class AppHelper {
         showSnackError("Invalid Url : $url");
       }
     } catch (e) {
-      print(e);
+      print("An error occurred while opening url $e");
        OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'AppHelper','method':'openUrl'});
 
     }
   }
 
   static bool isUrlValid(String url) {
+    print("Parsing url $url");
     bool validUrl = Uri.parse(url).isAbsolute;
     return validUrl;
   }
