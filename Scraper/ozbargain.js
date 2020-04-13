@@ -304,7 +304,7 @@ function parseMeta(meta) {
     let expired = meta.expired;
     if (expired) {
       let expiredMatch = expired.match(ExpiredRegex);
-      if (expiredMatch.length > 0) {
+      if (expiredMatch && expiredMatch.length > 0) {
         expiredDate = moment(expiredMatch[0], "DD MMM HH:mmA").unix();
       }
     }

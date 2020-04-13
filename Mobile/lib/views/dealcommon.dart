@@ -42,7 +42,7 @@ class DealCommon {
     return Text(t ?? "", style: nonTitleStyle);
   }
 
-  Widget getMeta(Deal d, {bool authorImage = false, bool gotoImage = false}) {
+  Widget getMeta(Deal d, {bool authorImage = false, bool gotoImage = false, bool showFilters = false}) {
     List<Widget> metaWidgets = new List<Widget>();
     metaWidgets.add(getNonTitle(d.meta.author));
 
@@ -88,7 +88,7 @@ class DealCommon {
           getSnapshotGoto(d, gotoImage)
         ]);
 
-    if ((d.meta.alertName ?? "").trim().length > 0) {
+    if (showFilters && (d.meta.alertName ?? "").trim().length > 0) {
     
       var names = d.meta.alertName.split(",");
       if (names.length > 0) {

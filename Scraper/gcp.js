@@ -1,7 +1,7 @@
 /* jshint esversion: 8 */
 const Firestore = require("@google-cloud/firestore");
 
-const PROJECTID = "ozbargains";
+const PROJECTID = "ozbargainau";
 const DEALS_COLLECTION = "deals";
 const INVALID_DEALS_COLLECTION = "invaliddeals";
 

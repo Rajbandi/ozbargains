@@ -170,10 +170,16 @@ class AppDataModel {
     List<Deal> filteredDeals = new List<Deal>();
     if (this.deals == null || this.deals.length == 0 || refresh) {
       print("sending query ******** ");
+      try{
       var serverDeals = await getDeals(DealsQuery(sort: "meta.timestamp,desc"));
-      this.deals = serverDeals
-          .skipWhile((value) => value.errors != null && value.errors.length > 0)
+      this.deals = Set<Deal>.from(serverDeals
+          .skipWhile((value) => value.errors != null && value.errors.length > 0))
           .toList();
+      }
+      catch(e)
+      {
+        OzBargainApp.logEvent(AnalyticsEventType.Error, {'error':e, 'class':'AppDataModel','method':'getFilteredDeals'});
+      }
     }
 
     print("Total deals found ${this.deals.length}");
@@ -284,7 +290,7 @@ class AppDataModel {
               deal.title.contains(regExp) || deal.description.contains(regExp))
           .toList();
     }
+    return Set<Deal>.from(filteredDeals).toList();
 
-    return filteredDeals.toList();
   }
 }

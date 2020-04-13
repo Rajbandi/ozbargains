@@ -131,7 +131,7 @@ class _MyDealsPageState extends State<MyDealsPage> {
                 Expanded(flex: 6, child: _common.getTitle(d)),
               ],
             )),
-            _common.getDealRow(_common.getMeta(d)),
+            _common.getDealRow(_common.getMeta(d, showFilters: true)),
             _common.getDealRow(Row(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
