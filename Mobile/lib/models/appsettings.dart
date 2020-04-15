@@ -5,13 +5,15 @@ class AppSettings {
   String title;
   bool openBrowser;
   bool showNotifications;
-
+  bool showUpgrades;
   List<DealFilter> alertFilters = new List<DealFilter>();
+  String favourites;
 
   AppSettings({this.title, this.theme})
   {
     openBrowser = true;
     showNotifications = true;
+    showUpgrades = true;
   }
 
   AppSettings.fromJson(Map<String, dynamic> json) {
@@ -19,7 +21,9 @@ class AppSettings {
     theme = json['theme'] ?? "light";
     openBrowser = json['openBrowser'] ?? true;
     showNotifications = json['showNotifications'] ?? true;
-
+    showUpgrades = json['showUpgrades']?? true;
+    favourites = json["favourites"]??"";
+    
     var filters = json['alertFilters'];
     if (filters != null) {
       alertFilters.clear();
@@ -39,7 +43,8 @@ class AppSettings {
     data['openBrowser'] = this.openBrowser ?? true;
     data['showNotifications'] = this.showNotifications ?? true;
     data['alertFilters'] = this.alertFilters;
-
+    data['showUpgrades'] = this.showUpgrades??true;
+    data['favourites'] = this.favourites ??"";
     return data;
   }
 }

@@ -97,8 +97,9 @@ class _OzBargainAppState extends State<OzBargainApp> {
 
   @override
   dispose() {
-    _connectivitySubscription.cancel();
     super.dispose();
+    _connectivitySubscription.cancel();
+    AppDataModel().dispose();
   }
 
   // Platform messages are asynchronous, so we initialize in an async method.

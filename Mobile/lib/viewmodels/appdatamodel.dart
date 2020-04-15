@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import "package:ozbargain/api/dealapi.dart";
@@ -39,11 +40,19 @@ class AppDataModel {
   }
 
   SharedPreferences get preferences => AppHelper.preferences;
+  StreamController dealStream = StreamController.broadcast();
+
+  void dispose()
+  {
+    if(dealStream != null && !dealStream.isClosed)
+    {
+        dealStream.close();
+    }
+  }
 
   AppSettings _settings;
 
   AppSettings get settings {
-    
     loadSettings();
     return _settings;
   }
@@ -52,7 +61,6 @@ class AppDataModel {
     print("******** updating settings ********");
     print("${settings.toJson()}");
     preferences.setString("settings", jsonEncode(settings.toJson()));
-  
   }
 
   refreshSettings() {
@@ -67,13 +75,15 @@ class AppDataModel {
         _settings = AppSettings.fromJson(jsonDecode(jsonString));
       } catch (e) {
         _settings = AppSettings();
-        
+
         print("An Error occurred while loading settings $e");
 
-        OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'AppDataModel','method':'loadSettings'});
-
+        OzBargainApp.logEvent(AnalyticsEventType.Error, {
+          'error': e.toString(),
+          'class': 'AppDataModel',
+          'method': 'loadSettings'
+        });
       }
-
     }
   }
 
@@ -82,34 +92,97 @@ class AppDataModel {
     updateSettings();
   }
 
+  void addOrRemoveFavourites(bool add, String dealId) {
+    var favourites = settings.favourites ?? "";
+    var dealIds = favourites.split(",").toList() ?? List<String>();
+    var exists = dealIds.any((d) => d == dealId);
+
+    var deal =
+        this.deals.firstWhere((d) => d.dealId == dealId, orElse: () => null);
+
+    var updated = false;
+    if (add) {
+      if (!exists) {
+        print("Adding deal $dealId to favourites");
+        dealIds.add(dealId);
+        updated = true;
+      }
+    } else {
+      if (exists) {
+        print("Removing deal $dealId from favourites");
+        dealIds.removeWhere((d) => d == dealId);
+        updated = true;
+      }
+    }
+    if (updated) {
+      if (deal != null) {
+        deal.starred = add;
+      }
+
+      var deals = dealIds.join(",");
+      print("Updating settings $deals");
+      settings.favourites = deals;
+      updateSettings();
+      refreshMyDeals();
+      if(dealStream.hasListener)
+      {
+       dealStream.add(dealId);
+      }
+    }
+  }
+
+  bool checkFavourite(String dealId) {
+    var favourites = settings.favourites ?? "";
+    var dealIds = favourites.split(",").toList() ?? List<String>();
+    var exists = dealIds.any((d) => d == dealId);
+    return exists;
+  }
+
   void refreshMyDeals() {
     myDeals.clear();
     try {
+      // var favString = settings.favourites ?? "";
+      // var favourites = favString.split(",").toList() ?? List<String>();
+   //   print("******** Favourites $favString");
       var alertFilters = settings.alertFilters;
-      if (alertFilters.length > 0) {
+     
         for (Deal deal in deals) {
           var alertNames = List<String>();
-
+       
+       //   var exists = favourites.any((d) => d == deal.dealId);
+          if (deal.starred) {
+            alertNames.add("Favourites");
+          }
           for (DealFilter alertFilter in alertFilters) {
             var isMatch = alertFilter.parse(deal);
             if (isMatch) {
               alertNames.add(alertFilter.name);
             }
           }
-          if(alertNames.length>0)
-          {
+          if (alertNames.length > 0) {
             deal.meta.alertName = alertNames.join(",");
             myDeals.add(deal);
           }
+          else
+          {
+            if((deal.meta.alertName??"").trim().length>0)
+            {
+              deal.meta.alertName = "";
+            }
+          }
         }
-
-         myDeals.sort((d1, d2) => d2.meta.timestamp.compareTo(d1.meta.timestamp));
-      }
-     
+        if(myDeals.length>0)
+        {
+        myDeals
+            .sort((d1, d2) => d2.meta.timestamp.compareTo(d1.meta.timestamp));
+        }
     } catch (e) {
       print(e);
-     OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'AppDataModel','method':'refreshMyDeals'});
-
+      OzBargainApp.logEvent(AnalyticsEventType.Error, {
+        'error': e.toString(),
+        'class': 'AppDataModel',
+        'method': 'refreshMyDeals'
+      });
     }
   }
 
@@ -138,9 +211,8 @@ class AppDataModel {
   List<Deal> deals = new List<Deal>();
   List<Deal> myDeals = new List<Deal>();
   List<FilterRule> rules = new List<FilterRule>();
-
+  String _lastError = "";
   Future<List<Deal>> getDeals(DealsQuery q) async {
-
     if (this.deals != null)
       this.deals.clear();
     else
@@ -148,10 +220,21 @@ class AppDataModel {
 
     var data = await _api.getDeals(q);
     if (data.success) {
+      _lastError = "";
+
+      var favString = settings.favourites??"";
+      var favourites = favString.split(",").toList()??List<String>();
       if (data.deals != null && data.deals.length > 0) {
-        data.deals.forEach((d) =>
-            {if (d.errors == null || d.errors.length <= 0) this.deals.add(d)});
+        data.deals.forEach((d) {
+              if (d.errors == null || d.errors.length <= 0) {
+                d.starred = favourites.any((dealId)=>dealId == d.dealId);
+                d.content = (d.content ??"").replaceAll(new RegExp(r'(?:[\t ]*(?:\r?\n|\r))+'), '\n');
+                this.deals.add(d);
+                }
+            });
       }
+    } else {
+      _lastError = data.errorMessage;
     }
     return this.deals;
   }
@@ -173,16 +256,13 @@ class AppDataModel {
     List<Deal> filteredDeals = new List<Deal>();
     if (this.deals == null || this.deals.length == 0 || refresh) {
       print("sending query ******** ");
-      try{
+
       var serverDeals = await getDeals(DealsQuery(sort: "meta.timestamp,desc"));
-      this.deals = Set<Deal>.from(serverDeals
-          .skipWhile((value) => value.errors != null && value.errors.length > 0))
-          .toList();
+      if ((_lastError ?? "").trim().length > 0) {
+        throw Exception("Some error occurred");
       }
-      catch(e)
-      {
-        OzBargainApp.logEvent(AnalyticsEventType.Error, {'error':e, 'class':'AppDataModel','method':'getFilteredDeals'});
-      }
+      this.deals = Set<Deal>.from(serverDeals.skipWhile(
+          (value) => value.errors != null && value.errors.length > 0)).toList();
     }
 
     print("Total deals found ${this.deals.length}");
@@ -287,13 +367,12 @@ class AppDataModel {
     }
 
     if (search != null && search.length > 0) {
-      var regExp = new RegExp(search,caseSensitive: false);
+      var regExp = new RegExp(search, caseSensitive: false);
       filteredDeals = filteredDeals
           .where((deal) =>
               deal.title.contains(regExp) || deal.description.contains(regExp))
           .toList();
     }
     return Set<Deal>.from(filteredDeals).toList();
-
   }
 }

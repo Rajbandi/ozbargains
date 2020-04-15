@@ -33,12 +33,13 @@ class AppHelper {
     try {
 
     
-      if (isUrlValid(url)) {
+      if (await canLaunch(url)) {
         if (AppDataModel().settings.openBrowser) {
           var result = await launch(url);
          
           if (result !=null && !result) {
             print(" Unabled open link");
+            showSnackError("Cannot open link. Copy link and open in browser");
           }
         } else {
           var view = new DealWebView(

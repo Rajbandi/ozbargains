@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/analyticsevent.dart';
 import 'package:ozbargain/models/deal.dart';
+import 'package:ozbargain/viewmodels/appdatamodel.dart';
 
 import 'app.dart';
 
@@ -42,7 +42,10 @@ class DealCommon {
     return Text(t ?? "", style: nonTitleStyle);
   }
 
-  Widget getMeta(Deal d, {bool authorImage = false, bool gotoImage = false, bool showFilters = false}) {
+  Widget getMeta(Deal d,
+      {bool authorImage = false,
+      bool gotoImage = false,
+      bool showFilters = false}) {
     List<Widget> metaWidgets = new List<Widget>();
     metaWidgets.add(getNonTitle(d.meta.author));
 
@@ -88,17 +91,17 @@ class DealCommon {
           getSnapshotGoto(d, gotoImage)
         ]);
 
-    if (showFilters && (d.meta.alertName ?? "").trim().length > 0) {
-    
+    if ((d.meta.alertName ?? "").trim().length > 0) {
       var names = d.meta.alertName.split(",");
       if (names.length > 0) {
         var alertWidget = Wrap(children: <Widget>[]);
         names.forEach((name) {
           alertWidget.children.add(
             Container(
-              margin: EdgeInsets.symmetric(horizontal:5),
+              margin: EdgeInsets.symmetric(horizontal: 5),
               child: Text(
                 name,
+                style: currentTheme.textTheme.bodyText1.copyWith(color:Colors.white),
               ),
               padding: EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
@@ -181,8 +184,8 @@ class DealCommon {
           height: height,
         );
     } catch (e) {
-    OzBargainApp.logEvent(AnalyticsEventType.Error, { 'error': e, 'class':'DealCommon','method':'getNetworkImage'});
-
+      OzBargainApp.logEvent(AnalyticsEventType.Error,
+          {'error': e, 'class': 'DealCommon', 'method': 'getNetworkImage'});
     }
 
     if (image == null) {
@@ -223,7 +226,7 @@ class DealCommon {
         d.meta.labels.forEach((label) {
           var lbl = "";
           if (label != null && label is String) {
-            lbl = (label as String).toUpperCase();
+            lbl = label.toUpperCase();
           }
 
           spans.add(WidgetSpan(
@@ -243,7 +246,7 @@ class DealCommon {
             opacity: 0.85,
             child: Text(d.title,
                 style: currentTheme.textTheme.headline6
-                    .copyWith(fontSize: 18.0)))));
+                    .copyWith(fontSize: 17.0)))));
 
     return RichText(text: TextSpan(children: spans));
   }
@@ -267,21 +270,33 @@ class DealCommon {
             PopupMenuItem(
                 value: 3,
                 child: titleMenuItem(
-                    Icon(Icons.content_copy, color: primaryColor),
-                    Text("Copy OZBargain link"))),
+                    Icon(d.starred ? Icons.star : Icons.star_border,
+                        color: accentColor),
+                    Text(d.starred
+                        ? "Remove from Favourites"
+                        : "Add to Favourites"))),
             PopupMenuItem(
                 value: 4,
                 child: titleMenuItem(
                     Icon(Icons.content_copy, color: accentColor),
                     Text("Copy Deal link"))),
+            PopupMenuItem(
+                value: 5,
+                child: titleMenuItem(
+                    Icon(Icons.content_copy, color: primaryColor),
+                    Text("Copy OZBargain link"))),
           ],
       initialValue: 1,
       onCanceled: () {},
       onSelected: (value) {
-        if (value == 3) {
+        if (value == 5) {
           AppHelper.copyToClipboard("Copied ", d.link);
         } else if (value == 4) {
           AppHelper.copyToClipboard("Copied ", d.snapshot.goto);
+        } else if (value == 3) {
+          d.starred = !d.starred;
+
+          AppDataModel().addOrRemoveFavourites(d.starred, d.dealId);
         } else if (value == 2) {
           AppHelper.shareData("OZBargain Deal", d.snapshot.goto);
         } else if (value == 1) {

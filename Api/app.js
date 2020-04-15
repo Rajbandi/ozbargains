@@ -19,6 +19,8 @@ const pubsub = new PubSub();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
+const storage = require('./gcp-storage');
+const bucket = "ozbargainau.appspot.com";
 
 
 app.use(compression());
@@ -28,7 +30,25 @@ app.use(express.urlencoded());
 app.use(express.json());
 
 app.get("/", async (req, res) => {
-  res.send("API Version ");
+  res.send("OZBargain API");
+});
+
+app.get("/api/appversion",async(req,res)=>{
+
+  try{
+      var version = await storage.downloadFile({
+        bucket: bucket,
+        fileName: 'app/version.json'
+      });
+      var contents = version.toString('utf-8');
+      log(contents);
+      res.status(200).json(contents);
+  }
+  catch(e)
+  {
+      res.status(500).json({});
+  }
+  
 });
 app.get("/api/deals", async (req, res) => {
   

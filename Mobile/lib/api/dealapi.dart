@@ -122,7 +122,6 @@ class DealsApi
       _log.d("Received deals ");
     } catch (e, st) {
       _log.d(e);
-      _log.d(st);
       deals.success = false;
       deals.errorCode = "101";
       deals.errorMessage = e.toString();

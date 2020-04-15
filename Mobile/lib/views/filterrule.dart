@@ -327,6 +327,16 @@ class _DealFilterViewState extends State<DealFilterView> {
     return Column(
     mainAxisAlignment: MainAxisAlignment.end,
     children: [
+      FloatingActionButton(           
+        backgroundColor: _theme.primaryColor,
+        child: Icon(Icons.add, color: Colors.white),
+        onPressed: () => _addRule(),
+        heroTag: null,
+      ),
+      SizedBox(
+        height: 10,
+      ),
+
       FloatingActionButton(
          backgroundColor: _theme.primaryColor,  
         child: Transform.rotate(angle: 180 * pi/180, child: Icon(
@@ -337,15 +347,6 @@ class _DealFilterViewState extends State<DealFilterView> {
         },
         heroTag: null,
       ),
-      SizedBox(
-        height: 10,
-      ),
-      FloatingActionButton(           
-        backgroundColor: _theme.primaryColor,
-        child: Icon(Icons.add, color: Colors.white),
-        onPressed: () => _addRule(),
-        heroTag: null,
-      )
     ]
   );
   }

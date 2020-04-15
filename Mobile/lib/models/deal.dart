@@ -12,6 +12,7 @@ class Deal {
   Meta meta;
   String dealId;
   String content;
+  bool starred;
 
   Deal(
       {this.description,
@@ -25,7 +26,8 @@ class Deal {
       this.snapshot,
       this.meta,
       this.dealId,
-      this.content});
+      this.content,
+      this.starred});
 
   Deal.fromJson(Map<String, dynamic> json) {
     description = json['description'];
@@ -35,6 +37,7 @@ class Deal {
     tags = json['tags'].cast<String>();
     category = json['category'];
     title = json['title'];
+    starred = json['starred']??false;
     if (json['errors'] != null) {
       errors = new List<String>();
       json['errors'].forEach((v) {
@@ -71,6 +74,7 @@ class Deal {
     }
     data['dealId'] = this.dealId;
     data['content'] = this.content;
+    data['starred'] = this.starred;
     return data;
   }
 }

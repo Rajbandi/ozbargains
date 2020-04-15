@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:ozbargain/helpers/apphelper.dart';
 import 'package:ozbargain/models/analyticsevent.dart';
@@ -5,7 +7,6 @@ import 'package:ozbargain/models/deal.dart';
 import 'package:ozbargain/models/dealfiltertype.dart';
 import 'package:ozbargain/models/pagetypes.dart';
 import 'package:ozbargain/viewmodels/appdatamodel.dart';
-import 'package:ozbargain/views/analyticspage.dart';
 import 'package:ozbargain/views/app.dart';
 import 'package:ozbargain/views/bottommenu.dart';
 import 'package:ozbargain/views/deal.dart';
@@ -29,21 +30,25 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
   List<Deal> deals = new List<Deal>();
   bool _searchVisible;
-  Color _primaryColor, _accentColor;
 
   DealCommon _common;
   DealFilterType _filter;
+  StreamSubscription _dealSub;
+
   @override
   void initState() {
     super.initState();
+     AppHelper.scaffoldKey = _scaffoldKey;
+
     WidgetsBinding.instance.addObserver(this);
     _floatButtonVisible = false;
     _filter = DealFilterType.Today;
     _searchVisible = false;
     _onRefresh();
     _searchController.addListener(() => onSearchTextChanged());
-
-    super.initState();
+    _dealSub = AppDataModel().dealStream.stream.listen((event) {
+        _onRefresh(scrollTop: false);
+    });
   }
 
   ThemeData _theme;
@@ -53,9 +58,13 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
 
   @override
   void dispose() {
+     super.dispose();
     WidgetsBinding.instance.removeObserver(this);
     _searchController.removeListener(() => onSearchTextChanged());
-    super.dispose();
+     if(_dealSub != null)
+    {
+      _dealSub.cancel();
+    }
   }
 
   @override
@@ -71,6 +80,8 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
 
     _onRefresh(search: text);
   }
+
+  String _noDealMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -95,9 +106,11 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
         itemCount: deals == null ? 0 : deals.length,
         scrollDirection: Axis.vertical);
 
+    var listViewItems = deals.length > 0 ? listView : Align(alignment: Alignment.center,
+    child: Text(_noDealMessage??""),);
     var refresh = RefreshIndicator(
       child: Stack(children: <Widget>[
-        listView,
+        listViewItems,
         Visibility(
             visible: (_isLoading ?? false),
             child: new Align(
@@ -148,20 +161,20 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
             appBar: AppBar(
                 title: Row(
               children: <Widget>[
-                Expanded(flex: 4, child: Text(widget.title ?? "")),
+                Expanded(flex: 2, child: Text(widget.title ?? "")),
                 Expanded(
-                  child: Row(
+                  child: Container(child:Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      InkWell(
-                        child: Icon(Icons.refresh),
+                      InkWell(child:
+                        Container(child: Icon(Icons.refresh),  padding:EdgeInsets.all(5),),
                         onTap: () => {_onRefresh(refresh: true)},
                       ),
                       InkWell(
-                          child: Icon(Icons.filter_list),
+                          child:Container(child: Icon(Icons.filter_list) , padding:EdgeInsets.all(5),),
                           onTap: () => {_showSearchRow()}),
                     ],
-                  ),
+                  ), margin: EdgeInsets.only(right:5),),
                 )
               ],
             )),
@@ -181,11 +194,18 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
   }
 
   _scrollToTop() {
+
+    if(deals!= null && deals.length>0)
+    {
+      if(_dealsController.hasClients)
+    {
     _dealsController.animateTo(
       0.0,
       curve: Curves.easeOut,
       duration: const Duration(milliseconds: 300),
     );
+    }
+    }
   }
 
   _openDeal(Deal d) {
@@ -195,6 +215,9 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
   }
 
   Widget _getDeal(Deal d) {
+
+    var content = d.content;
+    
     return new Container(
         padding: EdgeInsets.only(top: 5, bottom: 5, left: 5, right: 5),
         child: Column(
@@ -216,7 +239,7 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
                     child: Opacity(
                         opacity: 0.85,
                         child: Container(
-                            child: Text(d.content ?? ""),
+                            child: Text(content),
                             padding: EdgeInsets.only(left: 2))))
               ],
             )),
@@ -341,13 +364,17 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
 
   Widget getFilterSearchRow() {
     var row = Container(
-      child: Row(
+      child: 
+      Column(children: <Widget>[
+      Row(
         children: <Widget>[
           Expanded(
               flex: 6,
-              child: TextFormField(
+              child: TextField(
+                
                 controller: _searchController,
                 decoration: InputDecoration(
+                    hintText: "Search text here",
                     filled: true,
                     prefixIcon: Icon(
                       Icons.search,
@@ -361,25 +388,26 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
               )),
         ],
       ),
+      ],)
     );
 
     return row;
   }
 
-  Widget getFilterCategories() {
-    var categories = AppDataModel().getCategories();
+  // Widget getFilterCategories() {
+  //   var categories = AppDataModel().getCategories();
 
-    var listView = ListView.builder(
-      scrollDirection: Axis.horizontal,
-      itemBuilder: (context, index) {
-        var cat = categories[index];
-        return Text(cat);
-      },
-      itemCount: categories != null ? categories.length : 0,
-    );
+  //   var listView = ListView.builder(
+  //     scrollDirection: Axis.horizontal,
+  //     itemBuilder: (context, index) {
+  //       var cat = categories[index];
+  //       return Text(cat);
+  //     },
+  //     itemCount: categories != null ? categories.length : 0,
+  //   );
 
-    return listView;
-  }
+  //   return listView;
+  // }
 
   Widget getIcon(icon) {
     return Container(
@@ -389,7 +417,7 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
   }
 
   bool _isLoading = false;
-  Future<Null> _onRefresh({bool refresh = false, String search = ""}) async {
+  Future<Null> _onRefresh({bool refresh = false, String search = "", bool scrollTop=true}) async {
     if (refresh) {
       var status = await AppHelper.getInternetStatus();
       if (!status) {
@@ -399,13 +427,37 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
       }
     }
     print("Filtering with $_filter");
+    var error = false;
     setState(() {
       _isLoading = true;
     });
-
-    var list = await AppDataModel()
+  
+    var list = List<Deal>();
+    try{
+       list = await AppDataModel()
         .getFilteredDeals(_filter, refresh: refresh, search: search);
+       
+
+     }
+      catch(e)
+      {
+        print(e);
+        OzBargainApp.logEvent(AnalyticsEventType.Error, {'error':e.toString(), 'class':'Deals','method':'onRefresh'});
+        error = true;
+        AppHelper.showSnackError("Oops, something went wrong. Please try again later.");
+      }
+    
     setState(() {
+
+      if(error)
+      {
+         _noDealMessage= "Oops something went wrong. Please try again later";
+      }
+      else
+      if(deals.length == 0)
+      {
+          _noDealMessage="No deals found. Please check later";
+      }
       print(
           "*************** Refreshing deals ${list.length} ${this.deals.length}");
       this.deals.clear();
@@ -416,7 +468,10 @@ class _DealsViewState extends State<DealsView> with WidgetsBindingObserver {
       print("============== ${this.deals.length}");
       _isLoading = false;
     });
-    _scrollToTop();
+    if(scrollTop)
+    {
+      _scrollToTop();
+    }
     return null;
   }
 }

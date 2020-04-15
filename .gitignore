@@ -16,3 +16,5 @@ Mobile/android/settings_aar.gradle
 Mobile/android/.project
 Mobile/pubspec.lock
 Mobile/ios/Podfile.lock
+key.jks
+Mobile/android/key.properties
