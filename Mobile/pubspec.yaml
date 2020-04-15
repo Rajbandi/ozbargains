@@ -60,9 +60,9 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 flutter_icons:
-  android: "launcher_icon" 
+  #android: "launcher_icon" 
   ios: true
-  image_path: "assets/images/appicon-2.png"
+  image_path: "assets/images/appicon-3.png"
 
 # The following section is specific to Flutter.
 flutter:
