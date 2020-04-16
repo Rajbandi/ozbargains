@@ -215,6 +215,7 @@ class _OzBargainAppState extends State<OzBargainApp> {
     this.context = context;
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'OZBargain Deals',
       theme: Provider.of<ThemeModel>(context).currentTheme,
       navigatorObservers: <NavigatorObserver>[OzBargainApp.observer],

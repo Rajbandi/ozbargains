@@ -56,6 +56,11 @@ dev_dependencies:
       url: https://github.com/henriquearthur/flutter_native_splash.git
       ref: master
   flutter_launcher_icons: ^0.7.4
+  flutter_driver:
+    sdk: flutter
+  screenshots:
+  test: ^1.14.2
+  
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

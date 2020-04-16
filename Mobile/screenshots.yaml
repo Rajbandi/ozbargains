@@ -1,0 +1,10 @@
+tests:
+    - test_driver/main.dart
+
+staging: /Users/raj.bandi/projects/release
+
+devices:
+    ios:
+      iPhone 11 Pro:
+        frame: false
+      
