@@ -10,12 +10,12 @@ const putenv = require("putenv");
       );
 
     // //let url = "https://www.ozbargain.com.au/node/524178";
-    // let url="https://www.ozbargain.com.au/node/527817";
-    // let deal = await ozbargain.scrapeDeal(url);
+     let url="https://www.ozbargain.com.au/node/531143";
+     let deal = await ozbargain.scrapeDeal(url);
 
-    // console.log(deal);
+    console.log(deal);
 
-     ozbargain.parseLive();
+     //ozbargain.parseLive();
 
     // await ozbargain.publishDeals([deal]);
 })();

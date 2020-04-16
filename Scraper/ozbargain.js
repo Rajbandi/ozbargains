@@ -203,12 +203,42 @@ function scrapeDeal(dealLink) {
           deal.meta = parseMeta(deal.meta);
 
           if (deal.vote) {
-            if (!deal.vote.up) {
-              deal.vote.up = "0";
-            }
-            if (!deal.vote.down) {
-              deal.vote.down = "0";
-            }
+              try{
+                  if (!deal.vote.up) {
+                    deal.vote.up = "0";
+                  }
+                  var upVote = parseInt(deal.vote.up);
+                  if(isNaN(upVote))
+                  {
+                      deal.vote.up = "0";
+                  }
+              }
+              catch(e)
+              {
+                  deal.vote.up = "0";
+              }
+             try{
+                  if (!deal.vote.down) {
+                    deal.vote.down = "0";
+                  }
+                  var downVote = parseInt(deal.vote.down);
+                  if(isNaN(downVote))
+                  {
+                    deal.vote.down = "0";
+                  }
+              }
+              catch(e)
+              {
+                  deal.vote.down = "0";
+              }
+
+          }
+          else
+          {
+            deal.vote = {
+              up:"0",
+              down:"0"
+            };
           }
           let meta = deal.meta;
           if (!meta.author || meta.author.length < 2) {
