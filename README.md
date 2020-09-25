@@ -22,7 +22,7 @@ This repository has the following components
 ### Technologies Used:
 
 - Flutter 
-- Google cloud (AppEngine, Firestore, Schedular, Functions, Sockets with Pub/sub)
+- Google cloud (AppEngine, Firestore, Schedular, Functions, Sockets with Pub/sub, Storage)
 - Nodejs
 
 ### AppStore Links
