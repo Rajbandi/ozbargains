@@ -22,12 +22,12 @@ This repository has the following components
 ### Technologies Used:
 
 - Flutter 
-- Google cloud (AppEngine, Firestore, Schedular, Sockets with Pub/sub)
+- Google cloud (AppEngine, Firestore, Schedular, Functions, Sockets with Pub/sub)
 - Nodejs
 
 ### AppStore Links
 * iOS https://apps.apple.com/us/app/ozbargain-deals/id1507912157?ls=1
-* Android (coming soon, in review)
+* Android https://play.google.com/store/apps/details?id=com.omkaars.ozbargain
 
 
 ### ScreenShots
