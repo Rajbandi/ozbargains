@@ -20,7 +20,7 @@
     "moment-timezone": "^0.5.28",
     "putenv": "^2.0.4",
     "request": "^2.88.2",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.4.0",
     "socket.io-client": "^2.3.0",
     "x-ray": "^2.3.4"
   },
